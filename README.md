@@ -206,6 +206,39 @@ pnpm test
 
 详细架构说明请参考 [src/README.md](./src/README.md)。
 
+### 协作开发
+
+欢迎贡献代码！本项目采用 **Git Flow 简化版** 分支策略：
+
+```
+main (稳定发布)  ← PR（需通过测试）
+  ↑
+dev (开发分支)   ← 日常开发
+  ↑
+feature/* (功能分支)
+```
+
+**开发流程**：
+
+1. Fork 本仓库
+2. 从 `dev` 分支创建功能分支：`git checkout -b feature/新功能`
+3. 开发并提交（遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范）
+4. 推送并创建 PR 到 `dev` 分支
+5. 等待 CI 测试通过和代码审查
+
+**提交格式**：
+
+```
+feat: 添加新功能
+fix: 修复 bug
+docs: 更新文档
+refactor: 重构代码
+test: 添加测试
+chore: 构建/工具相关
+```
+
+详细协作规范请参考 [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md)。
+
 ## 📄 许可证
 
 [Aladdin](LICENSE)
