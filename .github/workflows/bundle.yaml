@@ -39,14 +39,16 @@ jobs:
       - name: Build and inject to JSON
         run: pnpm build:inject
 
+      - name: Force add dist and json (ignored by .gitignore)
+        run: |
+          git add -f dist/
+          git add json/
+
       - name: Commit changes
         uses: EndBug/add-and-commit@v9.1.3
         with:
           default_author: github_actions
           message: '[bot] build: 更新构建产物和脚本JSON'
-          add: |
-            dist/
-            json/
 
       # 自动打版本 tag, 从而让 jsdelivr 基于版本号在 12h 内更新缓存而不是用非版本号的 7d 缓存
       - id: autotag
