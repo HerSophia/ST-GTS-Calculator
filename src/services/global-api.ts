@@ -24,6 +24,7 @@ import {
 import { VERSION } from '../version';
 import { useSettingsStore } from '../stores/settings';
 import { getMvuDebugInfo, injectTestData, clearTestData } from './debug';
+import { checkForUpdates, getReleasePageUrl } from './updater';
 
 /**
  * 全局 API 类型定义
@@ -48,6 +49,10 @@ export interface GiantessCalcAPI {
     clearTestData: typeof clearTestData;
     logs: ReturnType<typeof useSettingsStore>['debugLogs'];
     clearLogs: () => void;
+  };
+  updater: {
+    checkForUpdates: typeof checkForUpdates;
+    getReleasePageUrl: typeof getReleasePageUrl;
   };
 }
 
@@ -82,6 +87,10 @@ export function exposeGlobalFunctions(): void {
         return settingsStore.debugLogs;
       },
       clearLogs: () => settingsStore.clearDebugLogs(),
+    },
+    updater: {
+      checkForUpdates,
+      getReleasePageUrl,
     },
   };
 

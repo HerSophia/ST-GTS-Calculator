@@ -78,3 +78,15 @@ export {
   initExtensions,
   syncExtensionsWithSettings,
 } from './extensions';
+
+// Updater - 更新服务
+export {
+  initUpdater,
+  checkForUpdates,
+  fetchLatestRelease,
+  getLatestReleaseApiUrl,
+  getReleasePageUrl,
+  getJsDelivrUrl,
+  getRemoteScriptUrl,
+  getRemoteJsonUrl,
+} from './updater';

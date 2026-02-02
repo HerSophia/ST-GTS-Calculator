@@ -7,6 +7,7 @@ import { createScriptIdDiv, teleportStyle } from '@util/script';
 import Panel from './ui/Panel.vue';
 import { initMvuIntegration, exposeGlobalFunctions } from './mvu集成';
 import { initExtensions } from './services/extensions';
+import { initUpdater } from './services/updater';
 
 $(() => {
   // 先创建 Pinia 实例
@@ -23,6 +24,8 @@ $(() => {
   initMvuIntegration();
   // 3. 暴露全局函数
   exposeGlobalFunctions();
+  // 4. 初始化更新检查（延迟执行，不阻塞启动）
+  initUpdater();
 
   const { destroy } = teleportStyle();
 

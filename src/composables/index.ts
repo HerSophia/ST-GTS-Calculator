@@ -12,3 +12,4 @@ export { useWorldview, type WorldviewFormData } from './useWorldview';
 export { usePrompts, type NewTemplateData } from './usePrompts';
 export { useDebug, type ActualDamageFormData } from './useDebug';
 export { useExtensions } from './useExtensions';
+export { useUpdater } from './useUpdater';

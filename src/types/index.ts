@@ -86,3 +86,13 @@ export type {
   Worldview,
   WorldviewState,
 } from './worldview';
+
+// 更新器相关
+export type {
+  VersionInfo,
+  UpdateCheckResult,
+  UpdaterSettings,
+  UpdaterState,
+  GitHubReleaseAsset,
+  GitHubReleaseResponse,
+} from './updater';
