@@ -2,6 +2,7 @@
   "scripts": {
     "build:dev": "webpack --mode development",
     "build": "webpack --mode production",
+    "build:inject": "webpack --mode production && node script/inject-to-json.mjs",
     "watch": "webpack --mode development --watch --progress",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,scss,html,vue}\" --no-error-on-unmatched-pattern",
     "lint": "eslint",

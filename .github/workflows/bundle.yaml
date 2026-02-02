@@ -7,6 +7,7 @@ on:
       - main
     paths-ignore:
       - dist/**
+      - json/**
   workflow_dispatch:
 
 permissions:
@@ -21,27 +22,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: JesseTG/rm@v1.0.3
-        with:
-          path: dist
 
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4.1.0
         with:
           version: 10
 
-      - name: Install dependencies and build
-        run: pnpm install && pnpm build
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build and inject to JSON
+        run: pnpm build:inject
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9.1.3
         with:
           default_author: github_actions
-          message: '[bot] bundle dist from src'
+          message: '[bot] build: 更新构建产物和脚本JSON'
+          add: |
+            dist/
+            json/
 
       # 自动打版本 tag, 从而让 jsdelivr 基于版本号在 12h 内更新缓存而不是用非版本号的 7d 缓存
       - id: autotag
@@ -49,6 +54,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           with-v: true
+
       - name: Delete old tag if exists
         if: ${{ steps.autotag.outputs.tag != '0.0.0' && steps.autotag.outputs.new-tag != steps.autotag.outputs.tag }}
         run: git push --delete origin ${{ steps.autotag.outputs.tag }} || true

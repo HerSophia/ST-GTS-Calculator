@@ -1,0 +1,38 @@
+{
+  "type": "script",
+  "enabled": false,
+  "name": "巨大娘计算器-本地",
+  "id": "3f5f5cbb-5345-4458-b3e8-8e25667cf86a",
+  "content":"",
+  "info": "",
+  "button": {
+    "enabled": true,
+    "buttons": [
+      {
+        "name": "重新处理变量",
+        "visible": false
+      },
+      {
+        "name": "重新读取初始变量",
+        "visible": false
+      },
+      {
+        "name": "快照楼层",
+        "visible": false
+      },
+      {
+        "name": "重演楼层",
+        "visible": false
+      },
+      {
+        "name": "重试额外模型解析",
+        "visible": false
+      },
+      {
+        "name": "清除旧楼层变量",
+        "visible": false
+      }
+    ]
+  },
+  "data": {}
+}
