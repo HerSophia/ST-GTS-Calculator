@@ -1,0 +1,86 @@
+/**
+ * 巨大娘计算器 - CSS 变量定义
+ * 所有组件共享的设计令牌
+ */
+
+:root {
+  /* 主色调 - 更加鲜艳的粉色 */
+  --gc-primary: #ec4899;
+  --gc-primary-hover: #db2777;
+  --gc-primary-light: rgba(236, 72, 153, 0.15);
+  --gc-primary-border: rgba(236, 72, 153, 0.4);
+  --gc-primary-glow: 0 0 15px rgba(236, 72, 153, 0.3);
+  
+  /* 背景色 - 更深沉的蓝黑色 */
+  --gc-bg: #0f172a;
+  --gc-bg-dark: #020617;
+  --gc-bg-light: rgba(30, 41, 59, 0.6);
+  
+  /* 玻璃拟态 - 统一管理 */
+  --gc-glass-bg: rgba(15, 23, 42, 0.7);
+  --gc-glass-border: rgba(255, 255, 255, 0.08);
+  --gc-glass-highlight: rgba(255, 255, 255, 0.12);
+  --gc-glass-blur: blur(12px);
+  
+  /* 文字色 */
+  --gc-text: #f8fafc;
+  --gc-text-muted: #94a3b8;
+  --gc-text-dim: #64748b;
+  
+  /* 边框 */
+  --gc-border: rgba(255, 255, 255, 0.08);
+  --gc-border-light: rgba(255, 255, 255, 0.04);
+  --gc-border-hover: rgba(255, 255, 255, 0.15);
+  
+  /* 圆角 - 稍微增大以获得更现代的感觉 */
+  --gc-radius: 16px;
+  --gc-radius-sm: 10px;
+  --gc-radius-xs: 6px;
+  --gc-radius-lg: 20px;
+  
+  /* 阴影 */
+  --gc-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --gc-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  --gc-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --gc-shadow-glow: 0 0 15px rgba(236, 72, 153, 0.15);
+  
+  /* 状态色 */
+  --gc-success: #10b981;
+  --gc-success-bg: rgba(16, 185, 129, 0.15);
+  --gc-success-border: rgba(16, 185, 129, 0.3);
+  
+  --gc-warning: #f59e0b;
+  --gc-warning-bg: rgba(245, 158, 11, 0.15);
+  
+  --gc-danger: #ef4444;
+  --gc-danger-bg: rgba(239, 68, 68, 0.15);
+  --gc-danger-border: rgba(239, 68, 68, 0.3);
+  
+  /* 角色类型色 */
+  --gc-giant: #f97316;
+  --gc-giant-bg: rgba(249, 115, 22, 0.15);
+  --gc-giant-glow: 0 0 10px rgba(249, 115, 22, 0.2);
+  --gc-giant-gradient: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(239, 68, 68, 0.2));
+  
+  --gc-tiny: #3b82f6;
+  --gc-tiny-bg: rgba(59, 130, 246, 0.15);
+  --gc-tiny-glow: 0 0 10px rgba(59, 130, 246, 0.2);
+  --gc-tiny-gradient: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2));
+  
+  /* 损害色 */
+  --gc-damage: #f97316;
+  --gc-damage-bg: rgba(249, 115, 22, 0.1);
+  --gc-damage-border: rgba(249, 115, 22, 0.2);
+  
+  --gc-casualties: #ef4444;
+  --gc-buildings: #f59e0b;
+  --gc-cities: #a855f7;
+  
+  /* 字体 */
+  --gc-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --gc-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  /* 过渡 */
+  --gc-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --gc-transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

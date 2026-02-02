@@ -44,6 +44,7 @@
     "示例",
     "src",
     "util",
+    "tests",
     "*.d.ts",
   ],
   "exclude": [
