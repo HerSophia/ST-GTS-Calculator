@@ -1,4 +1,7 @@
 {
+  "name": "st-gts-calculator",
+  "version": "2.6.0",
+  "description": "酒馆助手脚本 - 巨大娘计算器",
   "scripts": {
     "build:dev": "webpack --mode development",
     "build": "webpack --mode production",

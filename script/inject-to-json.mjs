@@ -12,10 +12,21 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 
+// 从 package.json 读取版本号
+function getVersion() {
+  const pkgPath = path.join(rootDir, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+  return pkg.version || '0.0.0';
+}
+
 // 配置
+const VERSION = getVersion();
+const SCRIPT_BASE_NAME = '酒馆助手脚本-巨大娘计算器';
 const CONFIG = {
-  // 目标 JSON 文件路径
-  targetJsonPath: path.join(rootDir, 'json', '酒馆助手脚本-巨大娘计算器.json'),
+  // 目标 JSON 文件路径（源文件，不带版本号）
+  sourceJsonPath: path.join(rootDir, 'json', `${SCRIPT_BASE_NAME}.json`),
+  // 输出 JSON 文件路径（带版本号）
+  outputJsonPath: path.join(rootDir, 'json', `${SCRIPT_BASE_NAME}-v${VERSION}.json`),
   // 可能的构建输出路径（按优先级排序）
   possibleBuildPaths: [
     path.join(rootDir, 'dist', 'index.js'),
@@ -86,7 +97,31 @@ function findBuiltJs() {
   return null;
 }
 
+/**
+ * 清理旧版本的 JSON 文件
+ */
+function cleanOldVersions() {
+  const jsonDir = path.join(rootDir, 'json');
+  if (!fs.existsSync(jsonDir)) {
+    return;
+  }
+
+  const files = fs.readdirSync(jsonDir);
+  for (const file of files) {
+    // 匹配带版本号的文件（如 酒馆助手脚本-巨大娘计算器-v2.5.0.json）
+    if (file.startsWith(SCRIPT_BASE_NAME + '-v') && file.endsWith('.json')) {
+      const filePath = path.join(jsonDir, file);
+      // 不删除当前版本
+      if (filePath !== CONFIG.outputJsonPath) {
+        console.log(`[inject-to-json] 删除旧版本: ${file}`);
+        fs.unlinkSync(filePath);
+      }
+    }
+  }
+}
+
 function main() {
+  console.log(`[inject-to-json] 版本: v${VERSION}`);
   console.log('[inject-to-json] 开始注入脚本内容...');
 
   // 查找构建输出
@@ -121,9 +156,9 @@ function main() {
     process.exit(1);
   }
 
-  // 检查目标 JSON 是否存在
-  if (!fs.existsSync(CONFIG.targetJsonPath)) {
-    console.error(`[inject-to-json] 错误: 找不到目标 JSON 文件 ${CONFIG.targetJsonPath}`);
+  // 检查源 JSON 是否存在
+  if (!fs.existsSync(CONFIG.sourceJsonPath)) {
+    console.error(`[inject-to-json] 错误: 找不到源 JSON 文件 ${CONFIG.sourceJsonPath}`);
     process.exit(1);
   }
 
@@ -131,20 +166,35 @@ function main() {
   const jsContent = fs.readFileSync(builtJsPath, 'utf-8');
   console.log(`[inject-to-json] 已读取 JS 文件 (${(jsContent.length / 1024).toFixed(2)} KB)`);
 
-  // 读取并解析目标 JSON
-  const jsonContent = fs.readFileSync(CONFIG.targetJsonPath, 'utf-8');
+  // 读取并解析源 JSON
+  const jsonContent = fs.readFileSync(CONFIG.sourceJsonPath, 'utf-8');
   const jsonData = JSON.parse(jsonContent);
-  console.log(`[inject-to-json] 已读取 JSON 文件: ${jsonData.name || '未命名'}`);
+  console.log(`[inject-to-json] 已读取源 JSON 文件`);
 
-  // 注入 content 字段
+  // 更新 JSON 数据
   jsonData.content = jsContent;
+  jsonData.name = `巨大娘计算器 v${VERSION}`;  // 更新脚本名称带版本号
 
-  // 写回 JSON 文件（保持格式化）
+  // 清理旧版本文件
+  cleanOldVersions();
+
+  // 确保 json 目录存在
+  const jsonDir = path.dirname(CONFIG.outputJsonPath);
+  if (!fs.existsSync(jsonDir)) {
+    fs.mkdirSync(jsonDir, { recursive: true });
+  }
+
+  // 写入带版本号的 JSON 文件
   const updatedJson = JSON.stringify(jsonData, null, 2);
-  fs.writeFileSync(CONFIG.targetJsonPath, updatedJson, 'utf-8');
+  fs.writeFileSync(CONFIG.outputJsonPath, updatedJson, 'utf-8');
 
-  console.log(`[inject-to-json] ✅ 成功注入脚本内容到 ${path.relative(rootDir, CONFIG.targetJsonPath)}`);
+  console.log(`[inject-to-json] ✅ 成功生成: ${path.relative(rootDir, CONFIG.outputJsonPath)}`);
+  console.log(`[inject-to-json] 脚本名称: ${jsonData.name}`);
   console.log(`[inject-to-json] 脚本大小: ${(jsContent.length / 1024).toFixed(2)} KB`);
+
+  // 输出版本号供 CI 使用
+  console.log(`::set-output name=version::${VERSION}`);
+  console.log(`::set-output name=json_file::${path.basename(CONFIG.outputJsonPath)}`);
 }
 
 main();
