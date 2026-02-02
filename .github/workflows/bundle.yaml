@@ -46,7 +46,7 @@ jobs:
         id: get_version
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          JSON_FILE="酒馆助手脚本-巨大娘计算器-v${VERSION}.json"
+          JSON_FILE="GTS-Calculator-v${VERSION}.json"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "json_file=${JSON_FILE}" >> $GITHUB_OUTPUT
           echo "📦 Version: ${VERSION}"

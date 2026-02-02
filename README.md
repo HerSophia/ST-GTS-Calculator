@@ -24,7 +24,7 @@
 
 ### 第二步：导入脚本
 
-1. 下载脚本文件：[酒馆助手脚本-巨大娘计算器.json](https://github.com/HerSophia/ST-GTS-Calculator/raw/main/json/%E9%85%92%E9%A6%86%E5%8A%A9%E6%89%8B%E8%84%9A%E6%9C%AC-%E5%B7%A8%E5%A4%A7%E5%A8%98%E8%AE%A1%E7%AE%97%E5%99%A8.json)
+1. 前往 [Releases 页面](https://github.com/HerSophia/ST-GTS-Calculator/releases/latest) 下载最新版本的 `GTS-Calculator-vX.X.X.json` 文件
 2. 在 SillyTavern 顶部栏点击 **扩展** → **酒馆助手** → **脚本库**
 3. 点击 **导入脚本**，选择下载的 JSON 文件
 4. 选择 **全局脚本**

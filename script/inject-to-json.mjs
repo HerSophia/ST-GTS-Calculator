@@ -21,12 +21,13 @@ function getVersion() {
 
 // 配置
 const VERSION = getVersion();
-const SCRIPT_BASE_NAME = '酒馆助手脚本-巨大娘计算器';
+const SCRIPT_DISPLAY_NAME = '巨大娘计算器';  // JSON 内部显示的名称
+const SCRIPT_FILE_NAME = 'GTS-Calculator';   // 文件名（英文，避免编码问题）
 const CONFIG = {
-  // 目标 JSON 文件路径（源文件，不带版本号）
-  sourceJsonPath: path.join(rootDir, 'json', `${SCRIPT_BASE_NAME}.json`),
-  // 输出 JSON 文件路径（带版本号）
-  outputJsonPath: path.join(rootDir, 'json', `${SCRIPT_BASE_NAME}-v${VERSION}.json`),
+  // 目标 JSON 文件路径（源文件）
+  sourceJsonPath: path.join(rootDir, 'json', '酒馆助手脚本-巨大娘计算器.json'),
+  // 输出 JSON 文件路径（带版本号，英文名）
+  outputJsonPath: path.join(rootDir, 'json', `${SCRIPT_FILE_NAME}-v${VERSION}.json`),
   // 可能的构建输出路径（按优先级排序）
   possibleBuildPaths: [
     path.join(rootDir, 'dist', 'index.js'),
@@ -108,8 +109,8 @@ function cleanOldVersions() {
 
   const files = fs.readdirSync(jsonDir);
   for (const file of files) {
-    // 匹配带版本号的文件（如 酒馆助手脚本-巨大娘计算器-v2.5.0.json）
-    if (file.startsWith(SCRIPT_BASE_NAME + '-v') && file.endsWith('.json')) {
+    // 匹配带版本号的文件（如 GTS-Calculator-v2.5.0.json）
+    if (file.startsWith(SCRIPT_FILE_NAME + '-v') && file.endsWith('.json')) {
       const filePath = path.join(jsonDir, file);
       // 不删除当前版本
       if (filePath !== CONFIG.outputJsonPath) {
@@ -173,7 +174,7 @@ function main() {
 
   // 更新 JSON 数据
   jsonData.content = jsContent;
-  jsonData.name = `巨大娘计算器 v${VERSION}`;  // 更新脚本名称带版本号
+  jsonData.name = `${SCRIPT_DISPLAY_NAME} v${VERSION}`;  // 更新脚本名称带版本号
 
   // 清理旧版本文件
   cleanOldVersions();
@@ -191,10 +192,6 @@ function main() {
   console.log(`[inject-to-json] ✅ 成功生成: ${path.relative(rootDir, CONFIG.outputJsonPath)}`);
   console.log(`[inject-to-json] 脚本名称: ${jsonData.name}`);
   console.log(`[inject-to-json] 脚本大小: ${(jsContent.length / 1024).toFixed(2)} KB`);
-
-  // 输出版本号供 CI 使用
-  console.log(`::set-output name=version::${VERSION}`);
-  console.log(`::set-output name=json_file::${path.basename(CONFIG.outputJsonPath)}`);
 }
 
 main();
