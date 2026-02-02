@@ -3,11 +3,12 @@ name: bundle
 on:
   push:
     branches:
-      - master
       - main
     paths-ignore:
       - dist/**
       - json/**
+      - '**.md'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
@@ -18,8 +19,38 @@ concurrency:
   group: ${{ github.workflow }}
 
 jobs:
+  # 先运行测试
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4.1.0
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run ESLint
+        run: pnpm lint
+
+      - name: Run TypeScript type check
+        run: pnpm exec tsc --noEmit
+
+      - name: Run unit tests
+        run: pnpm test:run
+
+  # 测试通过后构建和发布
   bundle:
     runs-on: ubuntu-latest
+    needs: test
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       json_file: ${{ steps.get_version.outputs.json_file }}
