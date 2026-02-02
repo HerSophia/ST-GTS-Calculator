@@ -9,5 +9,27 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Auto generated type definitions
 auto-imports.d.ts
+auto-imports.zod.d.ts
 components.d.ts
+
+# Lock files (optional, usually kept but you have pnpm-lock ignored already)
+pnpm-lock.yaml
+
+# Build output
+dist/
+coverage/
+
+# Local folders
+示例/
+初始模板/
+
+# Local configuration
+tavern_sync.yaml
+
+# Editor/Tool specific (Optional, uncomment if needed)
+# .augment/
+# .kilocode/
+# .roo/
+# .idea/
