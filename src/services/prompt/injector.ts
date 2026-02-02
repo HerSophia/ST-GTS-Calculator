@@ -229,15 +229,16 @@ function renderTemplate(
         .map((char) => interpolate(template.content, char.context))
         .join('\n\n');
 
-    case 'interaction':
+    case 'interaction': {
       // 生成互动限制内容
       if (interactionList.length === 0 || !settings.injectInteractionLimits) {
         return null;
       }
       const interactionText = formatInteractionLimits(interactionList);
       return interpolate(template.content, { 互动限制列表: interactionText });
+    }
 
-    case 'rules':
+    case 'rules': {
       // 变量更新规则 - 只在有角色时显示
       if (characters.length === 0 || !settings.showVariableUpdateRules) {
         return null;
@@ -245,8 +246,9 @@ function renderTemplate(
       // 用第一个角色名作为示例
       const exampleContext = characters[0]?.context || { 角色名: '角色名' };
       return interpolate(template.content, exampleContext);
+    }
 
-    case 'worldview':
+    case 'worldview': {
       // 世界观设定 - 只在启用时显示
       if (!settings.injectWorldviewPrompt || characters.length === 0) {
         return null;
@@ -254,8 +256,9 @@ function renderTemplate(
       // 使用第一个角色的上下文（包含世界观提示词）
       const worldviewContext = characters[0]?.context || {};
       return interpolate(template.content, worldviewContext);
+    }
 
-    case 'damage':
+    case 'damage': {
       // 损害计算 - 只在启用损害计算并且有损害数据时显示
       if (
         !settings.enableDamageCalculation ||
@@ -271,6 +274,7 @@ function renderTemplate(
       });
       if (!damagePrompt) return null;
       return interpolate(template.content, { 损害数据: damagePrompt });
+    }
 
     default:
       return null;

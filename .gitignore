@@ -13,6 +13,7 @@ pnpm-debug.log*
 auto-imports.d.ts
 auto-imports.zod.d.ts
 components.d.ts
+@types/
 
 # Lock files (optional, usually kept but you have pnpm-lock ignored already)
 pnpm-lock.yaml
