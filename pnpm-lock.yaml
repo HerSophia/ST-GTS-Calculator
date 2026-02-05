@@ -2167,6 +2167,7 @@ packages:
   earcut@3.0.2:
     resolution: {integrity: sha512-X7hshQbLyMJ/3RPhyObLARM2sNxxmRALLKx1+NVFFnQ9gKzmCrxm9+uLIAdBcvc8FNLpctqlQ2V6AE92Ol9UDQ==}
 
+<<<<<<< HEAD
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
@@ -2175,6 +2176,8 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
+=======
+>>>>>>> f0b81694107b46de13c384cb766919135218501f
   electron-to-chromium@1.5.286:
     resolution: {integrity: sha512-9tfDXhJ4RKFNerfjdCcZfufu49vg620741MNs26a9+bhLThdB+plgMeou98CAaHu/WATj2iHOOHTp1hWtABj2A==}
 
@@ -5345,11 +5348,14 @@ snapshots:
 
   '@types/chai@5.2.3':
     dependencies:
+<<<<<<< HEAD
       '@types/deep-eql': 4.0.2
       assertion-error: 2.0.1
 
   '@types/cors@2.8.19':
     dependencies:
+=======
+>>>>>>> f0b81694107b46de13c384cb766919135218501f
       '@types/node': 25.2.0
 
   '@types/debug@4.1.12':
@@ -6604,6 +6610,7 @@ snapshots:
 
   earcut@3.0.2: {}
 
+<<<<<<< HEAD
   eastasianwidth@0.2.0: {}
 
   editorconfig@1.0.4:
@@ -6613,6 +6620,8 @@ snapshots:
       minimatch: 9.0.1
       semver: 7.7.3
 
+=======
+>>>>>>> f0b81694107b46de13c384cb766919135218501f
   electron-to-chromium@1.5.286: {}
 
   emoji-regex@8.0.0: {}
