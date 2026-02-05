@@ -36,6 +36,16 @@ export interface DebugCharacterInfo {
 }
 
 /**
+ * 数据来源类型
+ */
+export type DataSource = 'Store' | '楼层变量';
+
+/**
+ * 场景数据来源类型
+ */
+export type ScenarioSource = '默认设置' | '楼层变量' | 'Store（从变量同步）';
+
+/**
  * MVU 调试信息
  */
 export interface MvuDebugInfo {
@@ -51,8 +61,14 @@ export interface MvuDebugInfo {
   };
   scenario: {
     current: string;
-    source: '默认设置' | 'MVU变量';
+    source: ScenarioSource;
     reason?: string;
+    // 扩展场景信息
+    具体地点?: string;
+    场景时间?: string;
+    人群状态?: string;
+    人群密度?: number;
+    isCustomDensity?: boolean;
   };
   worldview: {
     id: string;
@@ -70,4 +86,6 @@ export interface MvuDebugInfo {
   scriptVariables: unknown;
   timestamp: string;
   error?: string;
+  /** 数据来源标记 */
+  dataSource?: DataSource;
 }

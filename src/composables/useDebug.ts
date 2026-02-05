@@ -7,6 +7,7 @@ import { storeToRefs } from 'pinia';
 import { useSettingsStore } from '../settings';
 import { useCharactersStore, type CharacterData } from '../characters';
 import { getMvuDebugInfo, injectTestData, clearTestData } from '../services/debug';
+import { writeActualDamage, clearActualDamage, syncVariablesToStore } from '../services/variables';
 import type { MvuDebugInfo } from '../types';
 
 export interface ActualDamageFormData {
@@ -137,12 +138,9 @@ export function useDebug() {
       return false;
     }
     
-    const prefix = settings.value.variablePrefix;
     const name = actualDamageTarget.value;
     
     try {
-      const variables = getVariables({ type: 'message', message_id: 'latest' });
-      
       // 构建实际损害数据
       const actualDamage: Record<string, unknown> = {};
       
@@ -163,9 +161,10 @@ export function useDebug() {
         actualDamage.备注 = actualDamageForm.value.note;
       }
       
-      // 保存到 MVU 变量
-      _.set(variables, `stat_data.${prefix}.${name}._实际损害`, actualDamage);
-      insertOrAssignVariables(variables, { type: 'message', message_id: 'latest' });
+      // 使用 writer 服务写入变量
+      writeActualDamage(name, actualDamage);
+      // 同步变量到 Store
+      syncVariablesToStore();
       
       settingsStore.debugLog(`✅ 已保存 ${name} 的实际损害数据:`, actualDamage);
       toastr.success(`已保存 ${name} 的实际损害数据`);
@@ -192,11 +191,13 @@ export function useDebug() {
       return false;
     }
     
-    const prefix = settings.value.variablePrefix;
     const name = actualDamageTarget.value;
     
     try {
-      deleteVariable(`stat_data.${prefix}.${name}._实际损害`, { type: 'message', message_id: 'latest' });
+      // 使用 writer 服务清除变量
+      clearActualDamage(name);
+      // 同步变量到 Store
+      syncVariablesToStore();
       
       // 重置表单
       actualDamageForm.value = defaultActualDamageForm();

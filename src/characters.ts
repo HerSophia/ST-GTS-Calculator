@@ -115,6 +115,8 @@ export const useCharactersStore = defineStore('giantess-characters', () => {
   return {
     // 来自 base store 的状态和方法
     characters: baseStore.characters,
+    scenario: baseStore.scenario,
+    interactions: baseStore.interactions,
     setCharacter: baseStore.setCharacter,
     getCharacter: baseStore.getCharacter,
     removeCharacter: baseStore.removeCharacter,
@@ -125,6 +127,8 @@ export const useCharactersStore = defineStore('giantess-characters', () => {
     addHistory: baseStore.addHistory,
     getAllCharacterInfo: baseStore.getAllCharacterInfo,
     getDamageSummary: baseStore.getDamageSummary,
+    setScenario: baseStore.setScenario,
+    getCurrentScenario: baseStore.getCurrentScenario,
     // 业务逻辑方法（委托给 services）
     addCharacter,
     refresh,

@@ -22,6 +22,10 @@ pnpm-lock.yaml
 dist/
 coverage/
 
+# CI generated versioned JSON files (keep source json only)
+json/GTS-Calculator-v*.json
+json/酒馆助手脚本-巨大娘计算器-v*.json
+
 # Local folders
 示例/
 初始模板/

@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "_场景": {
+      "default": {
+        "当前场景": "大城市",
+        "场景原因": ""
+      },
+      "type": "object",
+      "properties": {
+        "当前场景": {
+          "default": "大城市",
+          "type": "string"
+        },
+        "场景原因": {
+          "type": "string"
+        }
+      }
+    },
+    "_互动限制": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "角色": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "角色名"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "当前身高": {
+            "type": "number"
+          },
+          "原身高": {
+            "type": "number"
+          },
+          "变化原因": {
+            "type": "string"
+          },
+          "变化时间": {
+            "type": "string"
+          },
+          "自定义部位": {
+            "default": {},
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "_计算数据": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "_损害数据": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "_实际损害": {
+            "default": {
+              "总伤亡人数": 0,
+              "总建筑损毁": 0,
+              "总城市毁灭": 0,
+              "重大事件": []
+            },
+            "type": "object",
+            "properties": {
+              "总伤亡人数": {
+                "type": "number"
+              },
+              "总建筑损毁": {
+                "type": "number"
+              },
+              "总城市毁灭": {
+                "type": "number"
+              },
+              "最近行动": {
+                "type": "object",
+                "properties": {
+                  "描述": {
+                    "type": "string"
+                  },
+                  "伤亡人数": {
+                    "type": "number"
+                  },
+                  "建筑损毁": {
+                    "type": "number"
+                  },
+                  "时间点": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "描述"
+                ]
+              },
+              "重大事件": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "描述": {
+                      "type": "string"
+                    },
+                    "伤亡人数": {
+                      "type": "number"
+                    },
+                    "建筑损毁": {
+                      "type": "number"
+                    },
+                    "时间点": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "描述"
+                  ]
+                }
+              }
+            }
+          },
+          "_身高历史": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "身高": {
+                  "type": "number"
+                },
+                "身高_格式化": {
+                  "type": "string"
+                },
+                "时间戳": {
+                  "default": 1770285336225,
+                  "type": "number"
+                },
+                "时间点": {
+                  "type": "string"
+                },
+                "原因": {
+                  "type": "string"
+                },
+                "变化": {
+                  "type": "string",
+                  "enum": [
+                    "增大",
+                    "缩小"
+                  ]
+                },
+                "变化倍率": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "身高"
+              ]
+            }
+          }
+        },
+        "required": [
+          "当前身高",
+          "原身高"
+        ]
+      }
+    }
+  }
+}

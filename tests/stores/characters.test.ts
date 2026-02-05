@@ -410,4 +410,151 @@ describe('Store: characters', () => {
       expect(summary.scenario).toBe('大城市');
     });
   });
+
+  describe('消息页数据隔离', () => {
+    describe('getCurrentMessageId', () => {
+      it('初始应该为 null', () => {
+        const store = useCharactersStoreBase();
+        expect(store.getCurrentMessageId()).toBeNull();
+      });
+    });
+
+    describe('setCurrentMessageId', () => {
+      it('首次设置消息 ID 应该返回 true', () => {
+        const store = useCharactersStoreBase();
+        
+        const result = store.setCurrentMessageId(1);
+        
+        expect(result).toBe(true);
+        expect(store.getCurrentMessageId()).toBe(1);
+      });
+
+      it('设置相同的消息 ID 应该返回 false', () => {
+        const store = useCharactersStoreBase();
+        store.setCurrentMessageId(1);
+        
+        const result = store.setCurrentMessageId(1);
+        
+        expect(result).toBe(false);
+      });
+
+      it('切换消息 ID 应该清空角色数据', () => {
+        const store = useCharactersStoreBase();
+        store.setCurrentMessageId(1);
+        store.setCharacter('角色A', createMockCharacter({ name: '角色A' }));
+        store.setCharacter('角色B', createMockCharacter({ name: '角色B' }));
+        expect(store.characters.size).toBe(2);
+        
+        const result = store.setCurrentMessageId(2);
+        
+        expect(result).toBe(true);
+        expect(store.characters.size).toBe(0);
+        expect(store.getCurrentMessageId()).toBe(2);
+      });
+
+      it('切换消息 ID 应该清空场景数据', () => {
+        const store = useCharactersStoreBase();
+        store.setCurrentMessageId(1);
+        store.setScenario({ 当前场景: '大城市', 场景原因: '测试' });
+        
+        store.setCurrentMessageId(2);
+        
+        expect(store.scenario).toEqual({});
+      });
+
+      it('切换消息 ID 应该清空互动限制', () => {
+        const store = useCharactersStoreBase();
+        store.setCurrentMessageId(1);
+        store.setInteractions({ 'A_B': { sizeRatio: 100, impossible: [], possible: [] } as any });
+        
+        store.setCurrentMessageId(2);
+        
+        expect(store.getAllInteractions()).toEqual({});
+      });
+
+      it('支持 "latest" 作为消息 ID', () => {
+        const store = useCharactersStoreBase();
+        
+        const result = store.setCurrentMessageId('latest');
+        
+        expect(result).toBe(true);
+        expect(store.getCurrentMessageId()).toBe('latest');
+      });
+
+      it('从 "latest" 切换到数字 ID 应该清空数据', () => {
+        const store = useCharactersStoreBase();
+        store.setCurrentMessageId('latest');
+        store.setCharacter('角色', createMockCharacter({ name: '角色' }));
+        
+        const result = store.setCurrentMessageId(5);
+        
+        expect(result).toBe(true);
+        expect(store.characters.size).toBe(0);
+      });
+    });
+
+    describe('clearAll', () => {
+      it('应该清空消息 ID', () => {
+        const store = useCharactersStoreBase();
+        store.setCurrentMessageId(1);
+        store.setCharacter('角色', createMockCharacter({ name: '角色' }));
+        
+        store.clearAll();
+        
+        expect(store.getCurrentMessageId()).toBeNull();
+        expect(store.characters.size).toBe(0);
+      });
+    });
+
+    describe('数据隔离场景', () => {
+      it('不同消息的角色数据应该完全隔离', () => {
+        const store = useCharactersStoreBase();
+        
+        // 消息 1 的数据
+        store.setCurrentMessageId(1);
+        store.setCharacter('络络', createMockCharacter({ 
+          name: '络络', 
+          currentHeight: 100,
+        }));
+        
+        // 切换到消息 2
+        store.setCurrentMessageId(2);
+        
+        // 消息 1 的数据应该被清空
+        expect(store.getCharacter('络络')).toBeUndefined();
+        
+        // 添加消息 2 的数据
+        store.setCharacter('络络', createMockCharacter({ 
+          name: '络络', 
+          currentHeight: 200,
+        }));
+        
+        // 验证消息 2 的数据
+        expect(store.getCharacter('络络')?.currentHeight).toBe(200);
+      });
+
+      it('同名角色在不同消息中可以有不同数据', () => {
+        const store = useCharactersStoreBase();
+        
+        // 模拟切换回消息 1（假设重新从变量读取）
+        store.setCurrentMessageId(1);
+        store.setCharacter('络络', createMockCharacter({ 
+          name: '络络', 
+          currentHeight: 100,
+          changeReason: '消息1的原因',
+        }));
+        expect(store.getCharacter('络络')?.currentHeight).toBe(100);
+        
+        // 切换到消息 2
+        store.setCurrentMessageId(2);
+        store.setCharacter('络络', createMockCharacter({ 
+          name: '络络', 
+          currentHeight: 500,
+          changeReason: '消息2的原因',
+        }));
+        expect(store.getCharacter('络络')?.currentHeight).toBe(500);
+        expect(store.getCharacter('络络')?.changeReason).toBe('消息2的原因');
+      });
+    });
+  });
 });

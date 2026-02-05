@@ -4,6 +4,7 @@
 
 import type { GiantessData, TinyData } from './calculator';
 import type { DamageCalculation, ActualDamageRecord } from './damage';
+import type { CharacterItems, CharacterItemsCalculation } from './item';
 
 /**
  * 身高历史记录（Store 中使用的英文版本）
@@ -50,6 +51,10 @@ export interface CharacterMvuData {
   _实际损害?: ActualDamageRecord;
   /** 身高历史记录（MVU 变量中使用中文字段） */
   _身高历史?: MvuHeightRecord[];
+  /** 物品列表 */
+  _物品?: CharacterItems;
+  /** 物品计算结果 */
+  _物品计算?: CharacterItemsCalculation;
 }
 
 /**
@@ -66,6 +71,8 @@ export interface CharacterData {
   damageData?: DamageCalculation;
   actualDamage?: ActualDamageRecord;
   history?: HeightRecord[];
+  /** 物品计算结果 */
+  itemsCalc?: CharacterItemsCalculation;
 }
 
 /**

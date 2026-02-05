@@ -25,7 +25,7 @@ describe('Store: settings', () => {
       expect(store.settings.debug).toBe(false);
       expect(store.settings.variablePrefix).toBe('巨大娘');
       expect(store.settings.autoInject).toBe(true);
-      expect(store.settings.injectDepth).toBe(1);
+      expect(store.settings.injectDepth).toBe(9999);
       expect(store.settings.precision).toBe(2);
       expect(store.settings.maxHistoryRecords).toBe(20);
     });

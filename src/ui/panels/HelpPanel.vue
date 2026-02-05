@@ -8,7 +8,7 @@
     <div class="gc-help-content">
       <div class="gc-help-section">
         <h3><i class="fa-solid fa-rocket"></i> 快速开始</h3>
-        <p>在世界书或提示词中使用 MVU 命令：</p>
+        <p>LLM输出如下 MVU 命令即可：</p>
         <div class="gc-code-block">
           _.set('巨大娘.络络.当前身高', 170)<br>
           _.set('巨大娘.络络.原身高', 1.65)
@@ -32,10 +32,11 @@
         <h3><i class="fa-solid fa-book"></i> 更多帮助</h3>
         <p>查看项目文档了解更多用法：</p>
         <ul class="gc-help-links">
-          <li>MVU 变量结构</li>
+          <li>变量结构</li>
           <li>提示词模板系统</li>
           <li>世界观模板系统</li>
           <li>损害计算功能</li>
+          <li>更多功能</li>
         </ul>
       </div>
     </div>

@@ -17,7 +17,6 @@ const GITHUB_REPO = 'ST-GTS-Calculator';
 
 // API 端点
 const GITHUB_API_BASE = 'https://api.github.com';
-const JSDELIVR_BASE = 'https://cdn.jsdelivr.net/gh';
 
 /**
  * 获取 GitHub Release API URL
@@ -34,13 +33,6 @@ export function getReleasePageUrl(tag?: string): string {
     return `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/tag/${tag}`;
   }
   return `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
-}
-
-/**
- * 获取 jsDelivr CDN URL
- */
-export function getJsDelivrUrl(tag: string, filePath: string): string {
-  return `${JSDELIVR_BASE}/${GITHUB_OWNER}/${GITHUB_REPO}@${tag}/${filePath}`;
 }
 
 /**
@@ -151,22 +143,15 @@ export async function checkForUpdates(): Promise<UpdateCheckResult> {
 }
 
 /**
- * 获取远程脚本 URL（用于热更新场景）
- *
- * @param tag 版本标签，如 'v2.6.0'，不传则使用 'latest'
- */
-export function getRemoteScriptUrl(tag?: string): string {
-  if (tag) {
-    return getJsDelivrUrl(tag, 'dist/index.js');
-  }
-  // 使用 @latest 会自动获取最新版本
-  return `${JSDELIVR_BASE}/${GITHUB_OWNER}/${GITHUB_REPO}@latest/dist/index.js`;
-}
-
-/**
- * 获取远程 JSON 配置文件 URL
+ * 获取远程 JSON 配置文件下载 URL
+ * 
+ * 注意：此函数返回的是 GitHub Release 下载链接
+ * 实际使用时应优先使用 checkForUpdates() 返回的 downloadUrl
+ * 
+ * @param version 版本号，如 '2.7.0' 或 'v2.7.0'
  */
 export function getRemoteJsonUrl(version: string): string {
   const tag = version.startsWith('v') ? version : `v${version}`;
-  return getJsDelivrUrl(tag, `json/GTS-Calculator-${tag}.json`);
+  // 使用 GitHub Releases 下载链接
+  return `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${tag}/GTS-Calculator-${tag}.json`;
 }

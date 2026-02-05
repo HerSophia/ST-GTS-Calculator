@@ -13,6 +13,8 @@ import type { Component } from 'vue';
 import type {
   Extension,
   ExtensionRegistry,
+  ExtensionInfo,
+  ExtensionAPI,
   CharacterData,
   PromptContext,
   PromptTemplate,
@@ -23,7 +25,7 @@ import type {
 /**
  * 扩展管理器实现
  */
-class ExtensionManagerImpl implements ExtensionRegistry {
+class ExtensionManagerImpl implements ExtensionRegistry, ExtensionAPI {
   private extensions = new Map<string, Extension>();
   private enabledSet = new Set<string>();
   private initialized = false;
@@ -71,12 +73,13 @@ class ExtensionManagerImpl implements ExtensionRegistry {
 
   /**
    * 启用扩展
+   * @returns 是否成功启用（同步部分），async 钩子可能仍在执行
    */
-  enable(id: string): void {
+  enable(id: string): boolean {
     const ext = this.extensions.get(id);
     if (!ext) {
       console.warn(`[ExtensionManager] Extension ${id} not found`);
-      return;
+      return false;
     }
 
     // 检查依赖
@@ -86,57 +89,73 @@ class ExtensionManagerImpl implements ExtensionRegistry {
           console.warn(
             `[ExtensionManager] Cannot enable ${id}: dependency ${depId} not enabled`
           );
-          return;
+          return false;
         }
       }
     }
 
     if (this.enabledSet.has(id)) {
-      return; // 已经启用
+      return true; // 已经启用
     }
 
     this.enabledSet.add(id);
     console.log(`[ExtensionManager] Enabled extension: ${id}`);
 
-    // 调用启用钩子
+    // 调用启用钩子（支持 async）
     try {
-      ext.onEnable?.();
+      const result = ext.onEnable?.();
+      // 如果是 Promise，处理异步错误
+      if (result instanceof Promise) {
+        result.catch((e) => {
+          console.error(`[ExtensionManager] Async onEnable failed for ${id}:`, e);
+        });
+      }
+      return true;
     } catch (e) {
       console.error(`[ExtensionManager] Failed to enable extension ${id}:`, e);
       this.enabledSet.delete(id);
+      return false;
     }
   }
 
   /**
    * 禁用扩展
+   * @returns 是否成功禁用
    */
-  disable(id: string): void {
+  disable(id: string): boolean {
     const ext = this.extensions.get(id);
     if (!ext) {
-      return;
+      return false;
     }
 
     // 检查是否有其他扩展依赖它
     for (const [otherId, other] of this.extensions) {
       if (other.dependencies?.includes(id) && this.isEnabled(otherId)) {
         console.warn(`[ExtensionManager] Cannot disable ${id}: ${otherId} depends on it`);
-        return;
+        return false;
       }
     }
 
     if (!this.enabledSet.has(id)) {
-      return; // 已经禁用
+      return true; // 已经禁用
     }
 
     this.enabledSet.delete(id);
     console.log(`[ExtensionManager] Disabled extension: ${id}`);
 
-    // 调用禁用钩子
+    // 调用禁用钩子（支持 async）
     try {
-      ext.onDisable?.();
+      const result = ext.onDisable?.();
+      // 如果是 Promise，处理异步错误
+      if (result instanceof Promise) {
+        result.catch((e) => {
+          console.error(`[ExtensionManager] Async onDisable failed for ${id}:`, e);
+        });
+      }
     } catch (e) {
       console.error(`[ExtensionManager] Failed to disable extension ${id}:`, e);
     }
+    return true;
   }
 
   /**
@@ -324,6 +343,32 @@ class ExtensionManagerImpl implements ExtensionRegistry {
     return components;
   }
 
+  /**
+   * 收集所有扩展贡献的规则片段
+   * 用于追加到主规则模板
+   */
+  collectRulesContributions(): string[] {
+    const contributions: string[] = [];
+
+    for (const ext of this.getEnabled()) {
+      if (ext.getRulesContribution) {
+        try {
+          const contribution = ext.getRulesContribution();
+          if (contribution) {
+            contributions.push(contribution);
+          }
+        } catch (e) {
+          console.error(
+            `[ExtensionManager] Error in ${ext.id}.getRulesContribution:`,
+            e
+          );
+        }
+      }
+    }
+
+    return contributions;
+  }
+
   // ========== 状态管理 ==========
 
   /**
@@ -359,43 +404,125 @@ class ExtensionManagerImpl implements ExtensionRegistry {
   }
 
   /**
-   * 获取扩展信息（用于 UI 展示）
+   * 检查是否可以启用扩展
+   */
+  canEnable(id: string): { success: boolean; reason?: string; missingDependencies?: string[] } {
+    const ext = this.extensions.get(id);
+    if (!ext) {
+      return { success: false, reason: `Extension ${id} not found` };
+    }
+
+    if (this.enabledSet.has(id)) {
+      return { success: true }; // 已经启用
+    }
+
+    // 检查依赖
+    if (ext.dependencies && ext.dependencies.length > 0) {
+      const missing = ext.dependencies.filter((depId) => !this.isEnabled(depId));
+      if (missing.length > 0) {
+        return {
+          success: false,
+          reason: `Missing dependencies: ${missing.join(', ')}`,
+          missingDependencies: missing,
+        };
+      }
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * 检查是否可以禁用扩展
+   */
+  canDisable(id: string): { success: boolean; reason?: string; dependents?: string[] } {
+    const ext = this.extensions.get(id);
+    if (!ext) {
+      return { success: false, reason: `Extension ${id} not found` };
+    }
+
+    if (!this.enabledSet.has(id)) {
+      return { success: true }; // 已经禁用
+    }
+
+    // 检查是否有其他扩展依赖它
+    const dependents: string[] = [];
+    for (const [otherId, other] of this.extensions) {
+      if (other.dependencies?.includes(id) && this.isEnabled(otherId)) {
+        dependents.push(otherId);
+      }
+    }
+
+    if (dependents.length > 0) {
+      return {
+        success: false,
+        reason: `Other extensions depend on it: ${dependents.join(', ')}`,
+        dependents,
+      };
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * 获取扩展信息（用于 UI 展示和 API）
+   */
+  getInfo(id: string): ExtensionInfo | null {
+    const ext = this.extensions.get(id);
+    if (!ext) return null;
+
+    const canEnableResult = this.canEnable(id);
+    const canDisableResult = this.canDisable(id);
+
+    return {
+      extension: ext,
+      enabled: this.isEnabled(id),
+      canEnable: canEnableResult.success,
+      canDisable: canDisableResult.success,
+      missingDependencies: canEnableResult.missingDependencies,
+    };
+  }
+
+  /**
+   * 获取扩展信息（兼容旧 API）
+   * @deprecated 使用 getInfo() 代替
    */
   getExtensionInfo(id: string): {
     extension: Extension;
     enabled: boolean;
     canDisable: boolean;
   } | null {
-    const ext = this.extensions.get(id);
-    if (!ext) return null;
-
-    // 检查是否可以禁用（没有其他扩展依赖它）
-    let canDisable = true;
-    for (const [otherId, other] of this.extensions) {
-      if (other.dependencies?.includes(id) && this.isEnabled(otherId)) {
-        canDisable = false;
-        break;
-      }
-    }
-
+    const info = this.getInfo(id);
+    if (!info) return null;
     return {
-      extension: ext,
-      enabled: this.isEnabled(id),
-      canDisable,
+      extension: info.extension,
+      enabled: info.enabled,
+      canDisable: info.canDisable,
     };
   }
 
   /**
    * 获取所有扩展信息列表
    */
+  getAllInfo(): ExtensionInfo[] {
+    return this.getAll()
+      .map((ext) => this.getInfo(ext.id)!)
+      .filter(Boolean);
+  }
+
+  /**
+   * 获取所有扩展信息列表（兼容旧 API）
+   * @deprecated 使用 getAllInfo() 代替
+   */
   getAllExtensionInfo(): Array<{
     extension: Extension;
     enabled: boolean;
     canDisable: boolean;
   }> {
-    return this.getAll()
-      .map((ext) => this.getExtensionInfo(ext.id)!)
-      .filter(Boolean);
+    return this.getAllInfo().map((info) => ({
+      extension: info.extension,
+      enabled: info.enabled,
+      canDisable: info.canDisable,
+    }));
   }
 }
 

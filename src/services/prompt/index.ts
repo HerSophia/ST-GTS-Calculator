@@ -13,6 +13,8 @@ export {
   generateWorldviewPrompt,
   buildCharacterContext,
   generateAllDamagePrompt,
+  formatScenarioDetails,
+  generateScenarioList,
 } from './builder';
 
 // Injector - 提示词注入
@@ -20,6 +22,8 @@ export {
   getInjectedPromptId,
   uninjectPrompt,
   injectPromptContent,
+  injectBasePrompts,
   buildAndInjectPrompt,
   type CharacterDataForInjection,
+  type PromptDataInput,
 } from './injector';

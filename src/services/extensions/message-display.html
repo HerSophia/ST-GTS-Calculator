@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            elegant: { bg: '#0f172a', card: 'rgba(30, 41, 59, 0.85)', border: 'rgba(148, 163, 184, 0.2)', text: '#e2e8f0', accent: '#fcd34d', secondary: '#94a3b8' },
+            modern: { bg: '#18181b', card: 'rgba(39, 39, 42, 0.9)', border: 'rgba(255, 255, 255, 0.08)', text: '#f4f4f5', accent: '#3b82f6', secondary: '#71717a' },
+            terminal: { bg: '#000000', card: '#0a0a0a', border: '#2a2a2a', text: '#00ff00', accent: '#00ff00', secondary: '#666666' },
+            cyber: { bg: '#0a0a1a', card: 'rgba(15, 15, 35, 0.95)', border: 'rgba(139, 92, 246, 0.25)', text: '#e0e7ff', accent: '#a78bfa', secondary: '#6366f1' }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out',
+            'slide-down': 'slideDown 0.25s ease-out',
+            'glow': 'glow 2s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideDown: { '0%': { opacity: '0', transform: 'translateY(-8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            glow: { '0%': { boxShadow: '0 0 5px var(--glow-color)' }, '100%': { boxShadow: '0 0 20px var(--glow-color)' } },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: transparent; }
+    body { -ms-overflow-style: none; scrollbar-width: none; }
+    body::-webkit-scrollbar { display: none; }
+    .glass { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    
+    /* 折叠动画 */
+    .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, opacity 0.2s ease; opacity: 0; }
+    .collapsible-content.open { max-height: 2000px; opacity: 1; }
+    
+    /* 终端主题扫描线 */
+    .scanline { background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.03) 2px, rgba(0,255,0,0.03) 4px); pointer-events: none; }
+    
+    /* Cyber 主题发光 */
+    .cyber-glow { --glow-color: rgba(139, 92, 246, 0.4); animation: glow 2s ease-in-out infinite alternate; }
+    
+    /* 进度条 */
+    .progress-bar { height: 4px; border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; transition: width 0.5s ease; }
+    
+    /* Tab 样式 */
+    .tab-btn { transition: all 0.15s ease; cursor: pointer; user-select: none; }
+    .tab-btn:hover { opacity: 0.8; }
+    .tab-content { display: none; animation: fadeIn 0.2s ease; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body class="p-2">
+  <div id="gts-root" class="w-full mx-auto max-w-2xl">
+    <div class="text-center py-8 text-gray-500 text-sm">正在加载...</div>
+  </div>
+  
+  <script>
+  (function() {
+    // ================= 状态管理 =================
+    var state = {
+      theme: localStorage.getItem('gts-theme') || 'modern',
+      expandedCards: {},
+      expandedSections: {},  // 用于折叠/展开详情区块
+      activeTab: {},
+      characters: [],
+      scenario: null,
+      lastUpdate: 0
+    };
+    
+    // ================= 主题配置 =================
+    var THEMES = {
+      modern: {
+        name: '现代',
+        icon: '◉',
+        container: 'font-sans text-modern-text',
+        card: 'glass bg-modern-card border border-modern-border rounded-2xl shadow-xl overflow-hidden',
+        header: 'px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors',
+        headerTitle: 'font-semibold text-base text-white',
+        section: 'border-t border-modern-border',
+        sectionHeader: 'px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-white/5 text-sm font-medium text-modern-secondary',
+        badge: 'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide',
+        statGrid: 'grid grid-cols-2 sm:grid-cols-4 gap-2 p-3',
+        statItem: 'bg-white/5 rounded-xl p-2.5',
+        statLabel: 'text-[10px] text-zinc-500 font-medium uppercase tracking-wide',
+        statValue: 'text-sm font-semibold text-zinc-100 font-mono mt-0.5',
+        tabBar: 'flex gap-1 p-2 bg-black/20',
+        tabBtn: 'px-3 py-1.5 rounded-lg text-xs font-medium',
+        tabActive: 'bg-white/10 text-white',
+        tabInactive: 'text-zinc-500 hover:text-zinc-300',
+      },
+      elegant: {
+        name: '优雅',
+        icon: '✦',
+        container: 'font-serif text-elegant-text',
+        card: 'glass bg-elegant-card border border-elegant-border rounded-xl shadow-lg overflow-hidden',
+        header: 'px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-black/10 transition-colors border-b border-elegant-border',
+        headerTitle: 'font-serif text-lg italic text-white tracking-wide',
+        section: 'border-t border-elegant-border/50',
+        sectionHeader: 'px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-black/10 text-xs font-sans uppercase tracking-widest text-elegant-secondary',
+        badge: 'px-2 py-0.5 rounded text-[10px] font-sans font-medium uppercase tracking-wider border',
+        statGrid: 'grid grid-cols-2 sm:grid-cols-4 gap-px bg-elegant-border/30',
+        statItem: 'bg-slate-800/60 p-3 text-center',
+        statLabel: 'text-[10px] font-sans uppercase tracking-widest text-elegant-secondary',
+        statValue: 'text-base font-serif text-white mt-1',
+        tabBar: 'flex gap-2 p-3 bg-black/20 border-b border-elegant-border/50',
+        tabBtn: 'px-3 py-1 text-xs font-sans uppercase tracking-wider',
+        tabActive: 'text-elegant-accent border-b border-elegant-accent',
+        tabInactive: 'text-elegant-secondary hover:text-white',
+      },
+      terminal: {
+        name: '终端',
+        icon: '>_',
+        container: 'font-mono text-terminal-text',
+        card: 'bg-terminal-card border border-terminal-border overflow-hidden relative',
+        header: 'px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-zinc-900 border-b border-terminal-border',
+        headerTitle: 'text-sm uppercase text-terminal-text',
+        section: 'border-t border-terminal-border',
+        sectionHeader: 'px-3 py-1.5 flex items-center justify-between cursor-pointer hover:bg-zinc-900 text-xs uppercase text-terminal-secondary',
+        badge: 'px-1.5 py-0.5 text-[10px] uppercase border border-current',
+        statGrid: 'grid grid-cols-2 sm:grid-cols-4',
+        statItem: 'p-2 border-r border-b border-terminal-border',
+        statLabel: 'text-[10px] uppercase text-terminal-secondary block',
+        statValue: 'text-xs text-terminal-accent',
+        tabBar: 'flex border-b border-terminal-border',
+        tabBtn: 'px-3 py-1.5 text-[10px] uppercase border-r border-terminal-border',
+        tabActive: 'bg-terminal-accent/10 text-terminal-accent',
+        tabInactive: 'text-terminal-secondary hover:bg-zinc-900',
+        scanline: true,
+      },
+      cyber: {
+        name: '赛博',
+        icon: '◈',
+        container: 'font-sans text-cyber-text',
+        card: 'glass bg-cyber-card border border-cyber-border rounded-lg overflow-hidden cyber-glow',
+        header: 'px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-purple-500/5 transition-colors',
+        headerTitle: 'font-bold text-base text-white',
+        section: 'border-t border-cyber-border',
+        sectionHeader: 'px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-purple-500/5 text-sm font-medium text-cyber-secondary',
+        badge: 'px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30',
+        statGrid: 'grid grid-cols-2 sm:grid-cols-4 gap-2 p-3',
+        statItem: 'bg-purple-500/10 rounded-lg p-2.5 border border-purple-500/10',
+        statLabel: 'text-[10px] text-indigo-400 font-medium uppercase',
+        statValue: 'text-sm font-bold text-white font-mono mt-0.5',
+        tabBar: 'flex gap-1 p-2 bg-purple-900/20',
+        tabBtn: 'px-3 py-1.5 rounded text-xs font-medium',
+        tabActive: 'bg-purple-500/20 text-purple-300 border border-purple-500/30',
+        tabInactive: 'text-indigo-400 hover:text-purple-300',
+      }
+    };
+    
+    // ================= 工具函数 =================
+    function getApi() {
+      try { return parent.GiantessCalc || parent.window.GiantessCalc; } catch(e) { return null; }
+    }
+    
+    function formatLength(meters) {
+      if (meters == null || isNaN(meters)) return '-';
+      if (meters < 0.000001) return (meters * 1e9).toFixed(1) + ' nm';
+      if (meters < 0.001) return (meters * 1e6).toFixed(1) + ' μm';
+      if (meters < 0.01) return (meters * 1000).toFixed(2) + ' mm';
+      if (meters < 1) return (meters * 100).toFixed(1) + ' cm';
+      if (meters < 1000) return meters.toFixed(2) + ' m';
+      if (meters < 1000000) return (meters / 1000).toFixed(2) + ' km';
+      if (meters < 1e9) return (meters / 1000).toExponential(2) + ' km';
+      return (meters / 9.461e15).toFixed(2) + ' 光年';
+    }
+    
+    function formatNumber(n) {
+      if (n == null) return '-';
+      if (n >= 1e8) return (n / 1e8).toFixed(1) + '亿';
+      if (n >= 1e4) return (n / 1e4).toFixed(1) + '万';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+      return Math.round(n).toString();
+    }
+    
+    function formatRatio(ratio) {
+      if (ratio == null) return '-';
+      if (ratio >= 1) {
+        if (ratio >= 1e12) return (ratio / 1e12).toFixed(1) + '万亿x';
+        if (ratio >= 1e8) return (ratio / 1e8).toFixed(1) + '亿x';
+        if (ratio >= 1e4) return (ratio / 1e4).toFixed(1) + '万x';
+        return ratio.toFixed(1) + 'x';
+      } else {
+        return '1/' + Math.round(1/ratio);
+      }
+    }
+    
+    function getCharType(char) {
+      if (char['类型'] === '巨大娘' || (char['倍率'] && char['倍率'] > 1)) return 'giantess';
+      if (char['类型'] === '小人' || (char['倍率'] && char['倍率'] < 1)) return 'tiny';
+      return 'normal';
+    }
+    
+    function getTypeColors(type) {
+      return {
+        giantess: { badge: 'bg-red-500/15 text-red-300 border-red-500/30', icon: '♛', color: 'text-red-400' },
+        tiny: { badge: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30', icon: '🐜', color: 'text-cyan-400' },
+        normal: { badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30', icon: '👤', color: 'text-emerald-400' }
+      }[type];
+    }
+    
+    function toggleCard(id) {
+      state.expandedCards[id] = !state.expandedCards[id];
+      render();
+    }
+    
+    function toggleSection(id) {
+      state.expandedSections[id] = !state.expandedSections[id];
+      render();
+    }
+    
+    function setTab(cardId, tabId) {
+      state.activeTab[cardId] = tabId;
+      render();
+    }
+    
+    function setTheme(theme) {
+      state.theme = theme;
+      localStorage.setItem('gts-theme', theme);
+      render();
+    }
+    
+    // ================= 渲染组件 =================
+    function renderThemeSwitcher() {
+      var t = THEMES[state.theme];
+      var buttons = Object.keys(THEMES).map(function(key) {
+        var theme = THEMES[key];
+        var isActive = key === state.theme;
+        return '<button onclick="setTheme(\'' + key + '\')" class="px-2 py-1 rounded text-xs transition-all ' + 
+          (isActive ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white') + '" title="' + theme.name + '">' + 
+          theme.icon + '</button>';
+      }).join('');
+      
+      return '<div class="flex items-center justify-center gap-1 mb-3 p-1 rounded-lg bg-black/30">' + buttons + '</div>';
+    }
+    
+    function renderScenarioBar() {
+      if (!state.scenario) return '';
+      var t = THEMES[state.theme];
+      var s = state.scenario;
+      
+      // 判断是否有详细信息需要显示
+      var hasDetails = s.具体地点 || s.场景时间 || s.人群状态 || s.场景原因;
+      
+      // 格式化人群密度
+      var densityText = '';
+      if (s.人群密度) {
+        var d = s.人群密度;
+        if (d >= 10000) {
+          densityText = (d / 10000).toFixed(1) + '万/km²';
+        } else if (d >= 1000) {
+          densityText = (d / 1000).toFixed(1) + 'k/km²';
+        } else {
+          densityText = d + '/km²';
+        }
+      }
+      
+      var html = '<div class="' + t.card + ' mb-3 overflow-hidden">';
+      
+      // 头部：场景类型 + 人群密度
+      html += '<div class="px-4 py-3 flex items-center justify-between">' +
+        '<div class="flex items-center gap-3">' +
+          '<span class="text-xl">🌍</span>' +
+          '<div>' +
+            '<div class="text-[10px] uppercase tracking-wider text-gray-500">当前场景</div>' +
+            '<div class="font-semibold text-white">' + (s.当前场景 || '未设置') + '</div>' +
+          '</div>' +
+        '</div>';
+      
+      // 人群密度徽章
+      if (densityText) {
+        var isCustom = s.是自定义密度;
+        var badgeClass = isCustom 
+          ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
+          : 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+        html += '<div class="flex items-center gap-2">' +
+          '<div class="px-2 py-1 rounded-lg text-xs font-mono ' + badgeClass + ' border">' +
+            '<span class="mr-1">👥</span>' + densityText +
+            (isCustom ? ' <span class="text-[10px] opacity-70">自定义</span>' : '') +
+          '</div>' +
+        '</div>';
+      }
+      html += '</div>';
+      
+      // 详细信息区域
+      if (hasDetails) {
+        html += '<div class="px-4 py-2 bg-black/20 border-t border-white/5 flex flex-wrap gap-x-4 gap-y-1">';
+        
+        if (s.具体地点) {
+          html += '<div class="flex items-center gap-1.5 text-xs">' +
+            '<span class="text-blue-400">📍</span>' +
+            '<span class="text-gray-300">' + s.具体地点 + '</span>' +
+          '</div>';
+        }
+        if (s.场景时间) {
+          html += '<div class="flex items-center gap-1.5 text-xs">' +
+            '<span class="text-purple-400">🕐</span>' +
+            '<span class="text-gray-300">' + s.场景时间 + '</span>' +
+          '</div>';
+        }
+        if (s.人群状态) {
+          html += '<div class="flex items-center gap-1.5 text-xs">' +
+            '<span class="text-green-400">🚶</span>' +
+            '<span class="text-gray-300">' + s.人群状态 + '</span>' +
+          '</div>';
+        }
+        if (s.场景原因) {
+          html += '<div class="flex items-center gap-1.5 text-xs text-gray-500 w-full mt-1">' +
+            '<span>💡</span>' +
+            '<span class="italic">' + s.场景原因 + '</span>' +
+          '</div>';
+        }
+        
+        html += '</div>';
+      }
+      
+      html += '</div>';
+      return html;
+    }
+    
+    function renderStats(char, t) {
+      var calcData = char._计算数据 || char;
+      var stats = [
+        { label: '当前身高', value: calcData.当前身高_格式化 || formatLength(char.当前身高 || char.身高) },
+        { label: '原身高', value: formatLength(char.原身高 || char.原始身高) },
+        { label: '倍率', value: formatRatio(calcData.倍率) },
+        { label: '级别', value: calcData.级别 || '-' }
+      ];
+      
+      return '<div class="' + t.statGrid + '">' +
+        stats.map(function(s) {
+          return '<div class="' + t.statItem + '">' +
+            '<div class="' + t.statLabel + '">' + s.label + '</div>' +
+            '<div class="' + t.statValue + '">' + s.value + '</div>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    }
+    
+    function renderBodyParts(char, t) {
+      var calcData = char._计算数据;
+      if (!calcData || !calcData.身体部位_格式化) return '<div class="p-4 text-center text-gray-500 text-sm">暂无身体部位数据</div>';
+      
+      var parts = calcData.身体部位_格式化;
+      var cardId = 'body-' + char.name;
+      var isExpanded = state.expandedSections[cardId];
+      
+      // 重要数据（始终显示）
+      var primaryKeys = ['身高', '足长', '手掌长', '乳房高度'];
+      // 次要数据（折叠）
+      var secondaryCategories = {
+        '📏 高度': ['眼睛高度', '肩膀高度', '胸部顶端', '胸部底端', '肚脐高度', '裆部高度'],
+        '🦶 足部': ['足宽', '大脚趾长', '脚趾缝隙'],
+        '✋ 手部': ['手掌宽', '手指长', '指甲宽度'],
+        '💗 胸部': ['乳房宽度', '乳沟深度', '乳头直径'],
+        '🍑 臀部': ['臀部宽度', '臀沟深度'],
+        '👄 口腔': ['嘴巴宽度', '舌头长', '舌头宽']
+      };
+      
+      var html = '<div class="p-3 space-y-3">';
+      
+      // 主要数据
+      html += '<div class="grid grid-cols-2 gap-2">';
+      primaryKeys.forEach(function(key) {
+        if (parts[key]) {
+          html += '<div class="flex justify-between items-center px-3 py-2 bg-white/10 rounded-lg">' +
+            '<span class="text-xs text-gray-400">' + key + '</span>' +
+            '<span class="text-sm font-mono font-semibold text-white">' + parts[key] + '</span>' +
+          '</div>';
+        }
+      });
+      html += '</div>';
+      
+      // 展开按钮
+      html += '<button onclick="toggleSection(\'' + cardId + '\')" class="w-full py-1.5 text-xs text-gray-500 hover:text-gray-300 flex items-center justify-center gap-1 transition-colors">' +
+        '<span>' + (isExpanded ? '收起详情' : '展开更多') + '</span>' +
+        '<span class="transition-transform ' + (isExpanded ? 'rotate-180' : '') + '">▼</span>' +
+      '</button>';
+      
+      // 折叠内容
+      html += '<div class="collapsible-content ' + (isExpanded ? 'open' : '') + '">';
+      html += '<div class="space-y-3 pt-2 border-t border-white/10">';
+      for (var cat in secondaryCategories) {
+        var items = secondaryCategories[cat].filter(function(k) { return parts[k]; });
+        if (items.length === 0) continue;
+        
+        html += '<div>' +
+          '<div class="text-[10px] font-medium text-gray-500 mb-1.5 uppercase tracking-wider">' + cat + '</div>' +
+          '<div class="grid grid-cols-2 gap-1">';
+        items.forEach(function(key) {
+          html += '<div class="flex justify-between items-center px-2 py-1 bg-white/5 rounded text-xs">' +
+            '<span class="text-gray-500">' + key + '</span>' +
+            '<span class="font-mono text-gray-300">' + parts[key] + '</span>' +
+          '</div>';
+        });
+        html += '</div></div>';
+      }
+      html += '</div></div>';
+      
+      html += '</div>';
+      return html;
+    }
+    
+    function renderWorldView(char, t) {
+      var calcData = char._计算数据;
+      if (!calcData) return '<div class="p-4 text-center text-gray-500 text-sm">暂无数据</div>';
+      
+      var refs = calcData.眼中的世界_格式化 || calcData.眼中的巨大娘_格式化;
+      if (!refs) return '<div class="p-4 text-center text-gray-500 text-sm">暂无视角数据</div>';
+      
+      var isTiny = !!calcData.眼中的巨大娘_格式化;
+      var cardId = 'world-' + char.name;
+      var isExpanded = state.expandedSections[cardId];
+      
+      // 重要数据（始终显示）- 巨大娘视角和小人视角不同
+      var primaryKeys = isTiny 
+        ? ['身高', '足长', '手掌长']  // 小人看巨大娘
+        : ['普通成年人', '轿车长度', '十层楼房'];  // 巨大娘看世界
+      
+      // 次要数据（折叠）
+      var secondaryCategories = isTiny ? {
+        '👣 身体部位': ['乳房高度', '舌头长', '眼睛高度']
+      } : {
+        '👥 人类': ['普通男性', '普通女性', '小孩'],
+        '🚗 交通': ['公交车长度', '飞机_客机长'],
+        '🏢 建筑': ['单层楼高', '五十层大楼', '哈利法塔'],
+        '🌍 地理': ['珠穆朗玛峰', '云层高度'],
+        '🌙 天体': ['月球直径', '地球直径', '太阳直径']
+      };
+      
+      var html = '<div class="p-3 space-y-3">';
+      
+      // 主要数据
+      html += '<div class="space-y-1.5">';
+      primaryKeys.forEach(function(key) {
+        if (refs[key]) {
+          html += '<div class="flex justify-between items-center px-3 py-2 bg-white/10 rounded-lg">' +
+            '<span class="text-xs text-gray-400">' + key + '</span>' +
+            '<span class="text-sm font-mono font-semibold text-white">' + refs[key] + '</span>' +
+          '</div>';
+        }
+      });
+      html += '</div>';
+      
+      // 展开按钮
+      html += '<button onclick="toggleSection(\'' + cardId + '\')" class="w-full py-1.5 text-xs text-gray-500 hover:text-gray-300 flex items-center justify-center gap-1 transition-colors">' +
+        '<span>' + (isExpanded ? '收起详情' : '展开更多') + '</span>' +
+        '<span class="transition-transform ' + (isExpanded ? 'rotate-180' : '') + '">▼</span>' +
+      '</button>';
+      
+      // 折叠内容
+      html += '<div class="collapsible-content ' + (isExpanded ? 'open' : '') + '">';
+      html += '<div class="space-y-3 pt-2 border-t border-white/10">';
+      for (var cat in secondaryCategories) {
+        var items = secondaryCategories[cat].filter(function(k) { return refs[k]; });
+        if (items.length === 0) continue;
+        
+        html += '<div>' +
+          '<div class="text-[10px] font-medium text-gray-500 mb-1.5 uppercase tracking-wider">' + cat + '</div>' +
+          '<div class="space-y-1">';
+        items.forEach(function(key) {
+          html += '<div class="flex justify-between items-center px-2 py-1 bg-white/5 rounded text-xs">' +
+            '<span class="text-gray-500">' + key + '</span>' +
+            '<span class="font-mono text-gray-300">' + refs[key] + '</span>' +
+          '</div>';
+        });
+        html += '</div></div>';
+      }
+      html += '</div></div>';
+      
+      html += '</div>';
+      return html;
+    }
+    
+    function renderDamage(char, t) {
+      var damage = char.预估损害;
+      var actual = char.实际损害;
+      if (!damage && !actual) return '<div class="p-4 text-center text-gray-500 text-sm">暂无损害数据</div>';
+      
+      var html = '<div class="p-3 space-y-3">';
+      
+      if (damage) {
+        html += '<div class="p-3 bg-red-500/10 rounded-lg border border-red-500/20">' +
+          '<div class="text-[10px] uppercase tracking-wider text-red-400 mb-2 font-medium">预估损害</div>' +
+          '<div class="grid grid-cols-2 gap-2">' +
+            '<div><div class="text-[10px] text-gray-500">破坏力等级</div><div class="text-sm font-bold text-red-300">' + (damage.破坏力等级 || '-') + '</div></div>' +
+            '<div><div class="text-[10px] text-gray-500">单步伤亡</div><div class="text-sm font-bold text-red-300">' + (damage.单步伤亡 || '-') + '</div></div>' +
+            '<div class="col-span-2"><div class="text-[10px] text-gray-500">当前场景</div><div class="text-sm text-gray-300">' + (damage.场景 || '-') + '</div></div>' +
+          '</div>' +
+        '</div>';
+      }
+      
+      if (actual) {
+        html += '<div class="p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">' +
+          '<div class="text-[10px] uppercase tracking-wider text-yellow-400 mb-2 font-medium">实际损害记录</div>' +
+          '<div class="grid grid-cols-2 gap-2">' +
+            '<div><div class="text-[10px] text-gray-500">总伤亡人数</div><div class="text-sm font-bold text-yellow-300">' + (actual.总伤亡人数_格式化 || '-') + '</div></div>' +
+            '<div><div class="text-[10px] text-gray-500">建筑损毁</div><div class="text-sm font-bold text-yellow-300">' + (actual.总建筑损毁 ? actual.总建筑损毁 + '栋' : '-') + '</div></div>' +
+            (actual.最近行动 ? '<div class="col-span-2"><div class="text-[10px] text-gray-500">最近行动</div><div class="text-sm text-gray-300">' + actual.最近行动 + '</div></div>' : '') +
+          '</div>' +
+        '</div>';
+      }
+      
+      html += '</div>';
+      return html;
+    }
+    
+    function renderHistory(char, t) {
+      var history = char._身高历史;
+      if (!history || history.length === 0) return '<div class="p-4 text-center text-gray-500 text-sm">暂无身高变化记录</div>';
+      
+      var html = '<div class="p-3"><div class="relative pl-4 border-l-2 border-gray-700 space-y-3">';
+      history.slice().reverse().slice(0, 10).forEach(function(record, i) {
+        var changeIcon = record.变化 === '增大' ? '📈' : (record.变化 === '缩小' ? '📉' : '•');
+        var changeColor = record.变化 === '增大' ? 'text-red-400' : (record.变化 === '缩小' ? 'text-cyan-400' : 'text-gray-400');
+        
+        html += '<div class="relative animate-fade-in" style="animation-delay: ' + (i * 50) + 'ms">' +
+          '<div class="absolute -left-[21px] w-3 h-3 rounded-full bg-gray-800 border-2 border-gray-600 ' + changeColor + '"></div>' +
+          '<div class="bg-white/5 rounded-lg p-2">' +
+            '<div class="flex items-center justify-between mb-1">' +
+              '<span class="font-mono text-sm text-white">' + (record.身高_格式化 || formatLength(record.身高)) + '</span>' +
+              '<span class="text-[10px] text-gray-500">' + (record.时间点 || '') + '</span>' +
+            '</div>' +
+            (record.原因 ? '<div class="text-xs text-gray-400">' + changeIcon + ' ' + record.原因 + '</div>' : '') +
+            (record.变化倍率 ? '<div class="text-[10px] text-gray-500 mt-1">变化: ' + formatRatio(record.变化倍率) + '</div>' : '') +
+          '</div>' +
+        '</div>';
+      });
+      html += '</div></div>';
+      return html;
+    }
+    
+    function renderCharacterCard(char, index) {
+      var t = THEMES[state.theme];
+      var type = getCharType(char);
+      var colors = getTypeColors(type);
+      var cardId = 'card-' + index;
+      var isExpanded = state.expandedCards[cardId];
+      var activeTab = state.activeTab[cardId] || 'stats';
+      
+      var tabs = [
+        { id: 'stats', label: '数据', icon: '📊' },
+        { id: 'body', label: '身体', icon: '👤' },
+        { id: 'world', label: '视角', icon: '👁️' },
+        { id: 'damage', label: '损害', icon: '💥' },
+        { id: 'history', label: '历史', icon: '📜' }
+      ];
+      
+      var tabContent = '';
+      switch(activeTab) {
+        case 'stats': tabContent = renderStats(char, t); break;
+        case 'body': tabContent = renderBodyParts(char, t); break;
+        case 'world': tabContent = renderWorldView(char, t); break;
+        case 'damage': tabContent = renderDamage(char, t); break;
+        case 'history': tabContent = renderHistory(char, t); break;
+      }
+      
+      var badgeText = char.级别 || char.类型 || (type === 'giantess' ? '巨大娘' : type === 'tiny' ? '小人' : 'NORMAL');
+      
+      return '<div class="' + t.card + ' mb-3 animate-fade-in" style="animation-delay: ' + (index * 80) + 'ms">' +
+        // 头部
+        '<div class="' + t.header + '" onclick="toggleCard(\'' + cardId + '\')">' +
+          '<div class="flex items-center gap-2">' +
+            '<span class="text-lg ' + colors.color + '">' + colors.icon + '</span>' +
+            '<span class="' + t.headerTitle + '">' + char.name + '</span>' +
+          '</div>' +
+          '<div class="flex items-center gap-2">' +
+            '<span class="' + t.badge + ' ' + colors.badge + '">' + badgeText + '</span>' +
+            '<span class="text-gray-500 text-xs transition-transform ' + (isExpanded ? 'rotate-180' : '') + '">▼</span>' +
+          '</div>' +
+        '</div>' +
+        
+        // 基本数据（始终显示）
+        renderStats(char, t) +
+        
+        // 可折叠详情
+        '<div class="collapsible-content ' + (isExpanded ? 'open' : '') + '">' +
+          // Tab 栏
+          '<div class="' + t.tabBar + '">' +
+            tabs.map(function(tab) {
+              return '<button onclick="event.stopPropagation(); setTab(\'' + cardId + '\', \'' + tab.id + '\')" ' +
+                'class="' + t.tabBtn + ' tab-btn ' + (activeTab === tab.id ? t.tabActive : t.tabInactive) + '">' +
+                tab.icon + ' ' + tab.label +
+              '</button>';
+            }).join('') +
+          '</div>' +
+          // Tab 内容
+          '<div class="' + t.section + '">' + tabContent + '</div>' +
+        '</div>' +
+        
+        // 终端主题扫描线
+        (t.scanline ? '<div class="scanline absolute inset-0 pointer-events-none"></div>' : '') +
+      '</div>';
+    }
+    
+    function renderEmptyState() {
+      var t = THEMES[state.theme];
+      return '<div class="' + t.card + ' p-8 text-center">' +
+        '<div class="text-4xl mb-3 opacity-50">📊</div>' +
+        '<div class="text-gray-400 mb-2">等待角色数据...</div>' +
+        '<div class="text-xs text-gray-600">请在世界书或脚本中设置角色身高</div>' +
+      '</div>';
+    }
+    
+    // ================= 主渲染函数 =================
+    function render() {
+      var root = document.getElementById('gts-root');
+      var t = THEMES[state.theme];
+      
+      root.className = 'w-full mx-auto max-w-2xl ' + t.container;
+      
+      var html = renderThemeSwitcher();
+      html += renderScenarioBar();
+      
+      if (!state.characters || state.characters.length === 0) {
+        html += renderEmptyState();
+      } else {
+        state.characters.forEach(function(char, i) {
+          html += renderCharacterCard(char, i);
+        });
+      }
+      
+      // 更新时间戳
+      html += '<div class="text-center text-[10px] text-gray-600 mt-2">' +
+        '最后更新: ' + new Date(state.lastUpdate).toLocaleTimeString() +
+      '</div>';
+      
+      root.innerHTML = html;
+    }
+    
+    // ================= 数据获取 =================
+    function fetchData() {
+      var api = getApi();
+      if (!api) {
+        setTimeout(fetchData, 200);
+        return;
+      }
+      
+      try {
+        if (api.debug && api.debug.getMvuInfo) {
+          var info = api.debug.getMvuInfo();
+          if (info && info.messageVariables) {
+            // 合并角色详情和原始数据
+            var details = info.messageVariables.characterDetails || [];
+            var rawData = info.messageVariables.rawData || {};
+            
+            state.characters = details.map(function(d) {
+              var raw = rawData.角色 ? rawData.角色[d.name] : {};
+              return Object.assign({}, d, raw);
+            });
+            
+            // 获取场景数据（完整信息）
+            if (info.scenario) {
+              state.scenario = {
+                当前场景: info.scenario.current || info.scenario.当前场景,
+                场景原因: info.scenario.reason || info.scenario.场景原因,
+                具体地点: info.scenario.具体地点,
+                场景时间: info.scenario.场景时间,
+                人群状态: info.scenario.人群状态,
+                人群密度: info.scenario.人群密度 || info.scenario.populationDensity,
+                是自定义密度: info.scenario.isCustomDensity || (info.scenario.人群密度 > 0)
+              };
+            } else if (rawData._场景) {
+              // 从原始数据获取场景
+              var s = rawData._场景;
+              state.scenario = {
+                当前场景: s.当前场景,
+                场景原因: s.场景原因,
+                具体地点: s.具体地点,
+                场景时间: s.场景时间,
+                人群状态: s.人群状态,
+                人群密度: s.人群密度,
+                是自定义密度: s.人群密度 > 0
+              };
+            }
+            
+            state.lastUpdate = Date.now();
+          }
+        }
+      } catch(e) {
+        console.error('GTS Display Error:', e);
+      }
+      
+      render();
+    }
+    
+    // ================= 初始化 =================
+    window.toggleCard = toggleCard;
+    window.toggleSection = toggleSection;
+    window.setTab = setTab;
+    window.setTheme = setTheme;
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fetchData);
+    } else {
+      fetchData();
+    }
+    
+    // 定时刷新（每5秒）
+    setInterval(fetchData, 5000);
+  })();
+  </script>
+</body>
+</html>

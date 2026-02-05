@@ -14,7 +14,7 @@
 
     <div class="gc-prompts-content">
       <!-- 模板列表 -->
-      <div v-if="!editingTemplate && !isCreating" class="gc-prompts-list">
+      <div v-if="!editingTemplate && !isCreating && !viewingTemplate" class="gc-prompts-list">
         <div class="gc-prompts-hint">
           <i class="fa-solid fa-info-circle"></i>
           <span>启用/禁用模板来自定义注入的提示词内容，点击模板可编辑</span>
@@ -24,7 +24,7 @@
           v-for="template in templates" 
           :key="template.id" 
           class="gc-prompt-item"
-          :class="{ disabled: !template.enabled, builtin: template.builtin }"
+          :class="{ disabled: !template.enabled, builtin: template.builtin, readonly: template.readonly }"
         >
           <div class="gc-prompt-toggle">
             <GcSwitch
@@ -34,11 +34,12 @@
             />
           </div>
           
-          <div class="gc-prompt-info" @click="startEdit(template)">
+          <div class="gc-prompt-info" @click="template.readonly ? startView(template) : startEdit(template)">
             <div class="gc-prompt-name">
               <span>{{ template.name }}</span>
               <GcBadge v-if="template.builtin" size="sm">内置</GcBadge>
               <GcBadge v-else variant="custom" size="sm">自定义</GcBadge>
+              <GcBadge v-if="template.readonly" variant="warning" size="sm">只读</GcBadge>
               <span class="gc-prompt-type">{{ template.type }}</span>
             </div>
             <div class="gc-prompt-desc">{{ template.description }}</div>
@@ -53,8 +54,12 @@
                 <i class="fa-solid fa-chevron-down"></i>
               </button>
             </div>
-            <button class="gc-btn-icon-sm" @click="startEdit(template)" title="编辑">
-              <i class="fa-solid fa-pen"></i>
+            <button 
+              class="gc-btn-icon-sm" 
+              @click="template.readonly ? startView(template) : startEdit(template)" 
+              :title="template.readonly ? '查看' : '编辑'"
+            >
+              <i :class="template.readonly ? 'fa-solid fa-eye' : 'fa-solid fa-pen'"></i>
             </button>
             <button 
               v-if="!template.builtin" 
@@ -124,6 +129,42 @@
         </div>
       </div>
 
+      <!-- 只读预览 -->
+      <div v-else-if="viewingTemplate" class="gc-prompt-editor">
+        <div class="gc-editor-header">
+          <button class="gc-btn-link" @click="cancelView">
+            <i class="fa-solid fa-arrow-left"></i> 返回列表
+          </button>
+          <span class="gc-editor-title">预览: {{ viewingTemplate.name }}</span>
+          <GcBadge variant="warning" size="sm">只读</GcBadge>
+        </div>
+        <div class="gc-editor-form">
+          <div class="gc-readonly-notice">
+            <i class="fa-solid fa-lock"></i>
+            <span>此模板为系统核心模板，内容不可编辑。您只能启用/禁用此模板。</span>
+          </div>
+          <div v-if="viewingTemplate.type === 'rules'" class="gc-extension-notice">
+            <i class="fa-solid fa-puzzle-piece"></i>
+            <span>注意：启用的扩展可能会在此模板后追加额外的规则内容（如损害记录规则）。这些内容不会显示在此预览中，但会包含在实际注入的提示词中。</span>
+          </div>
+          <div class="gc-setting-item">
+            <label>模板名称</label>
+            <div class="gc-readonly-field">{{ viewingTemplate.name }}</div>
+          </div>
+          <div class="gc-setting-item">
+            <label>描述</label>
+            <div class="gc-readonly-field">{{ viewingTemplate.description }}</div>
+          </div>
+          <div class="gc-setting-item">
+            <label>模板内容</label>
+            <pre class="gc-readonly-content">{{ viewingTemplate.content }}</pre>
+          </div>
+          <div class="gc-editor-actions">
+            <GcButton @click="cancelView">关闭</GcButton>
+          </div>
+        </div>
+      </div>
+
       <!-- 模板编辑 -->
       <div v-else-if="editingTemplate" class="gc-prompt-editor">
         <div class="gc-editor-header">
@@ -187,6 +228,7 @@ const emit = defineEmits<{
 // 内部状态
 const isCreating = ref(false);
 const editingTemplate = ref<PromptTemplate | null>(null);
+const viewingTemplate = ref<PromptTemplate | null>(null);
 const newTemplate = ref({
   name: '',
   description: '',
@@ -233,6 +275,14 @@ const cancelEdit = () => {
   editingTemplate.value = null;
 };
 
+const startView = (template: PromptTemplate) => {
+  viewingTemplate.value = { ...template };
+};
+
+const cancelView = () => {
+  viewingTemplate.value = null;
+};
+
 const saveTemplate = () => {
   if (editingTemplate.value) {
     emit('save', editingTemplate.value);
@@ -246,6 +296,9 @@ const handleClose = () => {
   }
   if (editingTemplate.value) {
     editingTemplate.value = null;
+  }
+  if (viewingTemplate.value) {
+    viewingTemplate.value = null;
   }
   emit('close');
 };
@@ -514,5 +567,67 @@ const handleClose = () => {
 
 .gc-btn-link:hover {
   color: var(--gc-text, #f1f5f9);
+}
+
+/* 只读模板样式 */
+.gc-prompt-item.readonly {
+  border-left: 3px solid #f59e0b;
+}
+
+.gc-readonly-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 6px;
+  font-size: 0.85em;
+  color: #fbbf24;
+}
+
+.gc-readonly-notice i {
+  font-size: 1.1em;
+}
+
+.gc-extension-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 6px;
+  font-size: 0.85em;
+  color: #a78bfa;
+}
+
+.gc-extension-notice i {
+  font-size: 1.1em;
+  margin-top: 2px;
+}
+
+.gc-readonly-field {
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--gc-border, rgba(255, 255, 255, 0.1));
+  border-radius: 6px;
+  color: var(--gc-text-muted, #94a3b8);
+  font-size: 0.9em;
+}
+
+.gc-readonly-content {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--gc-border, rgba(255, 255, 255, 0.1));
+  border-radius: 6px;
+  color: var(--gc-text-muted, #94a3b8);
+  font-size: 0.85em;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 0;
 }
 </style>
