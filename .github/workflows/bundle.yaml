@@ -1,0 +1,103 @@
+name: bundle
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  # 先运行测试
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4.1.0
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run ESLint
+        run: pnpm lint
+
+      - name: Run unit tests
+        run: pnpm test:run
+
+  # 测试通过后构建和发布
+  bundle:
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      json_file: ${{ steps.get_version.outputs.json_file }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4.1.0
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build and inject to JSON
+        run: pnpm build:inject
+
+      - name: Get version info
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          JSON_FILE="GTS-Calculator-v${VERSION}.json"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "json_file=${JSON_FILE}" >> $GITHUB_OUTPUT
+          echo "📦 Version: ${VERSION}"
+          echo "📄 JSON File: ${JSON_FILE}"
+
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: 巨大娘计算器 v${{ steps.get_version.outputs.version }}
+          body: |
+            ## 📦 安装方法
+            
+            1. 下载下方的 `${{ steps.get_version.outputs.json_file }}` 文件
+            2. 在 SillyTavern 中打开 **扩展** → **酒馆助手** → **脚本库**
+            3. 点击 **导入脚本**，选择下载的 JSON 文件
+            4. 选择 **全局脚本**，导入并启用
+            
+            ## 📋 更新日志
+            
+            请查看 [README](https://github.com/${{ github.repository }}#readme) 了解完整更新日志。
+          files: |
+            json/${{ steps.get_version.outputs.json_file }}
+          draft: false
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,356 @@
+/**
+ * 巨大娘计算器 - 共享组件样式
+ * 基础 UI 元素的通用样式
+ */
+
+/* ========== 按钮 ========== */
+
+.gc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--gc-radius-sm, 10px);
+  border: 1px solid var(--gc-border, rgba(255, 255, 255, 0.08));
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--gc-text-muted, #94a3b8);
+  font-size: 0.9em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--gc-transition, all 0.2s ease);
+  user-select: none;
+}
+
+.gc-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--gc-text, #f8fafc);
+  border-color: var(--gc-border-hover, rgba(255, 255, 255, 0.15));
+  transform: translateY(-1px);
+}
+
+.gc-btn:active {
+  transform: translateY(0);
+}
+
+.gc-btn.primary {
+  background: var(--gc-primary, #ec4899);
+  border: 1px solid transparent;
+  color: white;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.25);
+}
+
+.gc-btn.primary:hover {
+  background: var(--gc-primary-hover, #db2777);
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.35);
+}
+
+.gc-btn.danger {
+  background: var(--gc-danger-bg, rgba(239, 68, 68, 0.15));
+  border-color: var(--gc-danger-border, rgba(239, 68, 68, 0.3));
+  color: var(--gc-danger, #ef4444);
+}
+
+.gc-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.gc-btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85em;
+  border-radius: var(--gc-radius-xs, 6px);
+}
+
+.gc-btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--gc-radius-sm, 10px);
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--gc-text-muted, #94a3b8);
+  cursor: pointer;
+  transition: var(--gc-transition, all 0.2s ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gc-btn-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--gc-text, #f8fafc);
+}
+
+.gc-btn-icon.primary {
+  background: var(--gc-primary, #ec4899);
+  color: white;
+}
+
+.gc-btn-icon.primary:hover {
+  background: var(--gc-primary-hover, #db2777);
+}
+
+.gc-icon-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--gc-radius-sm, 10px);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--gc-text-muted, #94a3b8);
+  cursor: pointer;
+  transition: var(--gc-transition, all 0.2s ease);
+}
+
+.gc-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--gc-text, #f8fafc);
+}
+
+.gc-icon-btn.active {
+  background: var(--gc-primary-light, rgba(236, 72, 153, 0.15));
+  color: var(--gc-primary, #ec4899);
+}
+
+/* ========== 输入框 ========== */
+
+.gc-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--gc-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gc-radius-sm, 10px);
+  color: var(--gc-text, #f8fafc);
+  font-size: 0.9em;
+  transition: var(--gc-transition, all 0.2s ease);
+}
+
+.gc-input:hover {
+  border-color: var(--gc-border-hover, rgba(255, 255, 255, 0.15));
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.gc-input:focus {
+  outline: none;
+  border-color: var(--gc-primary, #ec4899);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 3px var(--gc-primary-light, rgba(236, 72, 153, 0.15));
+}
+
+.gc-input::placeholder {
+  color: var(--gc-text-dim, #64748b);
+}
+
+.gc-input.sm {
+  padding: 6px 10px;
+  font-size: 0.85em;
+}
+
+.gc-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--gc-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gc-radius-sm, 10px);
+  color: var(--gc-text, #f8fafc);
+  font-size: 0.9em;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  transition: var(--gc-transition, all 0.2s ease);
+}
+
+.gc-textarea:hover {
+  border-color: var(--gc-border-hover, rgba(255, 255, 255, 0.15));
+}
+
+.gc-textarea:focus {
+  outline: none;
+  border-color: var(--gc-primary, #ec4899);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 3px var(--gc-primary-light, rgba(236, 72, 153, 0.15));
+}
+
+/* ========== 开关 ========== */
+
+.gc-switch {
+  appearance: none;
+  width: 44px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: var(--gc-transition, all 0.2s ease);
+  border: 1px solid transparent;
+}
+
+.gc-switch::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  top: 1px;
+  left: 1px;
+  transition: var(--gc-transition, all 0.2s ease);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.gc-switch:checked {
+  background: var(--gc-primary, #ec4899);
+  border-color: transparent;
+}
+
+.gc-switch:checked::before {
+  left: 21px;
+}
+
+.gc-switch.sm {
+  width: 36px;
+  height: 20px;
+}
+
+.gc-switch.sm::before {
+  width: 16px;
+  height: 16px;
+}
+
+.gc-switch.sm:checked::before {
+  left: 17px;
+}
+
+/* ========== 徽章 ========== */
+
+.gc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 0.75em;
+  font-weight: 600;
+  border-radius: var(--gc-radius-xs, 6px);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--gc-text-muted, #94a3b8);
+  white-space: nowrap;
+}
+
+.gc-badge.giant {
+  background: var(--gc-giant-bg, rgba(249, 115, 22, 0.15));
+  color: var(--gc-giant, #f97316);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.gc-badge.tiny {
+  background: var(--gc-tiny-bg, rgba(59, 130, 246, 0.15));
+  color: var(--gc-tiny, #3b82f6);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.gc-badge.success {
+  background: var(--gc-success-bg, rgba(16, 185, 129, 0.15));
+  color: var(--gc-success, #10b981);
+}
+
+.gc-badge.danger {
+  background: var(--gc-danger-bg, rgba(239, 68, 68, 0.15));
+  color: var(--gc-danger, #ef4444);
+}
+
+.gc-badge.primary {
+  background: var(--gc-primary-light, rgba(236, 72, 153, 0.15));
+  color: var(--gc-primary, #ec4899);
+}
+
+/* ========== 卡片 ========== */
+
+.gc-card {
+  background: var(--gc-glass-bg, rgba(15, 23, 42, 0.7));
+  backdrop-filter: var(--gc-glass-blur, blur(12px));
+  border: 1px solid var(--gc-glass-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gc-radius, 16px);
+  padding: 20px;
+  transition: var(--gc-transition, all 0.2s ease);
+  box-shadow: var(--gc-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.2));
+}
+
+.gc-card:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: var(--gc-glass-highlight, rgba(255, 255, 255, 0.12));
+  transform: translateY(-2px);
+  box-shadow: var(--gc-shadow-lg, 0 20px 25px -5px rgba(0, 0, 0, 0.3));
+}
+
+.gc-card.active {
+  border-color: var(--gc-primary-border, rgba(236, 72, 153, 0.4));
+  box-shadow: var(--gc-shadow-glow, 0 0 15px rgba(236, 72, 153, 0.15));
+}
+
+/* ========== 空状态 ========== */
+
+.gc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--gc-text-muted, #94a3b8);
+  padding: 40px 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--gc-radius, 16px);
+  border: 1px dashed var(--gc-border, rgba(255, 255, 255, 0.08));
+  text-align: center;
+}
+
+.gc-empty i {
+  font-size: 2.5em;
+  opacity: 0.3;
+  margin-bottom: 8px;
+}
+
+/* ========== 加载动画 ========== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}

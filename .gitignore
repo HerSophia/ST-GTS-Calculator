@@ -1,0 +1,41 @@
+node_modules
+
+.DS_Store
+Thumbs.db
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Auto generated type definitions
+auto-imports.d.ts
+auto-imports.zod.d.ts
+components.d.ts
+@types/
+
+# Lock files (optional, usually kept but you have pnpm-lock ignored already)
+pnpm-lock.yaml
+
+# Build output
+dist/
+coverage/
+
+# CI generated versioned JSON files (keep source json only)
+json/GTS-Calculator-v*.json
+json/酒馆助手脚本-巨大娘计算器-v*.json
+
+# Local folders
+示例/
+初始模板/
+世界书/
+
+# Local configuration
+tavern_sync.yaml
+
+# Editor/Tool specific (Optional, uncomment if needed)
+# .augment/
+# .kilocode/
+# .roo/
+# .idea/
