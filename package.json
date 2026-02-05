@@ -81,7 +81,7 @@
     "typescript": "6.0.0-dev.20250807",
     "typescript-eslint": "^8.54.0",
     "unplugin-auto-import": "^20.3.0",
-    "unplugin-vue-components": "^29.2.0",
+    "unplugin-vue-components": "^31.0.0",
     "vitest": "^3.2.4",
     "vue-eslint-parser": "^10.2.0",
     "vue-loader": "^17.4.2",
