@@ -1,0 +1,83 @@
+name: 🐛 Bug 报告
+description: 报告一个 Bug
+title: "[Bug]: "
+labels: ["bug", "待分类"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你提交 Bug 报告！请尽可能详细地描述问题，这将帮助我们更快地定位和修复。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 清晰简洁地描述这个 Bug
+      placeholder: 当我执行 xxx 操作时，出现了 xxx 问题...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 详细的复现步骤
+      placeholder: |
+        1. 打开 xxx
+        2. 点击 xxx
+        3. 输入 xxx
+        4. 出现问题
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 你期望发生什么？
+      placeholder: 我期望...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      description: 实际发生了什么？
+      placeholder: 实际上...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本号
+      description: 巨大娘计算器的版本号
+      placeholder: "例如: 2.7.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tavern
+    attributes:
+      label: SillyTavern 版本
+      description: 你使用的 SillyTavern 版本
+      options:
+        - Staging (最新开发版)
+        - Release (稳定版)
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 控制台日志
+      description: 如果有报错，请粘贴浏览器控制台（F12）的错误信息
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 补充信息
+      description: 其他可能有帮助的信息（截图、配置等）
