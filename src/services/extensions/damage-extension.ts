@@ -1,14 +1,23 @@
 /**
  * 巨大娘计算器 - 损害计算扩展
- * 
+ *
  * 将损害计算功能封装为扩展
- * 
+ *
  * @module services/extensions/damage-extension
  */
 
-import type { Extension, CharacterData, PromptTemplate, GiantessData, TinyData } from '../../types';
+import { defineComponent, h, type Component } from 'vue';
+import type {
+  Extension,
+  CharacterData,
+  PromptTemplate,
+  GiantessData,
+  TinyData,
+  CharacterCardContext,
+} from '../../types';
 import { calculateDamage, generateDamagePrompt } from '../../core/damage';
 import { useSettingsStore } from '../../stores/settings';
+import { useCharactersStoreBase } from '../../stores/characters';
 
 /**
  * 损害计算扩展 ID
@@ -51,20 +60,13 @@ export const damageExtension: Extension = {
     }
 
     const settingsStore = useSettingsStore();
+    const charactersStore = useCharactersStoreBase();
     
-    // 获取场景：优先使用 MVU 变量中的场景，否则使用设置中的默认场景
+    // 获取场景：优先使用 Store 中的场景，否则使用设置中的默认场景
     let scenario = settingsStore.settings.damageScenario;
-    try {
-      const variables = getVariables({ type: 'message', message_id: 'latest' });
-      const prefix = settingsStore.settings.variablePrefix;
-      const scenarioData = _.get(variables, `stat_data.${prefix}._场景`) as
-        | { 当前场景?: string }
-        | undefined;
-      if (scenarioData?.当前场景) {
-        scenario = scenarioData.当前场景;
-      }
-    } catch {
-      // 忽略错误，使用默认场景
+    const storeScenario = charactersStore.getCurrentScenario();
+    if (storeScenario) {
+      scenario = storeScenario;
     }
 
     try {
@@ -99,9 +101,10 @@ export const damageExtension: Extension = {
         name: '损害计算',
         description: '每个角色行动可能造成的破坏数据',
         enabled: true,
-        order: 25, // 在角色数据之后
+        order: 9975, // order 越大越靠前
         type: 'damage',
         builtin: true,
+        readonly: true,
         requiresFeature: 'damageCalculation',
         content: `---
 
@@ -114,9 +117,10 @@ export const damageExtension: Extension = {
         name: '损害描写指南',
         description: '指导 AI 如何描写破坏场景',
         enabled: false, // 默认不启用
-        order: 90,
+        order: 9955, // order 越大越靠前
         type: 'footer',
         builtin: true,
+        readonly: true,
         requiresFeature: 'damageCalculation',
         content: `## 破坏描写指南
 
@@ -132,6 +136,160 @@ export const damageExtension: Extension = {
 5. **情感基调**：根据世界观设定，调整描写的情感基调`,
       },
     ];
+  },
+
+  /**
+   * 判断是否应该显示损害卡片内容
+   */
+  shouldShowCardContent(context: CharacterCardContext): boolean {
+    // 只有巨大娘（倍率 >= 1）且有损害数据时才显示
+    const character = context.character;
+    if (!character.damageData) return false;
+    if (!character.calcData || character.calcData.倍率 < 1) return false;
+    return true;
+  },
+
+  /**
+   * 贡献角色卡片的损害数据展示组件
+   */
+  getCharacterCardExtra(): Component {
+    return defineComponent({
+      name: 'DamageCardContent',
+      props: {
+        character: {
+          type: Object,
+          required: true,
+        },
+        calcData: {
+          type: Object,
+          default: null,
+        },
+        expanded: {
+          type: Boolean,
+          default: false,
+        },
+      },
+      setup(props) {
+        return () => {
+          const damageData = props.character?.damageData;
+          if (!damageData) return null;
+
+          // 渲染损害数据卡片
+          return h(
+            'div',
+            {
+              class: 'gc-ext-damage-section',
+            },
+            [
+              // 标题行
+              h('div', { class: 'gc-ext-section-title' }, [
+                h('i', { class: 'fa-solid fa-explosion' }),
+                h('span', ' 破坏力数据'),
+                h('span', { class: 'gc-ext-badge damage' }, damageData.破坏力等级),
+              ]),
+              // 数据网格
+              h('div', { class: 'gc-ext-grid' }, [
+                h('div', { class: 'gc-ext-item' }, [
+                  h('div', { class: 'gc-ext-label' }, '足迹面积'),
+                  h('div', { class: 'gc-ext-value' }, damageData.足迹?.足迹面积_格式化 || '-'),
+                ]),
+                h('div', { class: 'gc-ext-item' }, [
+                  h('div', { class: 'gc-ext-label' }, '单步伤亡'),
+                  h(
+                    'div',
+                    { class: 'gc-ext-value casualties' },
+                    damageData.单步损害?.小人伤亡?.格式化 || '-'
+                  ),
+                ]),
+                h('div', { class: 'gc-ext-item' }, [
+                  h('div', { class: 'gc-ext-label' }, '建筑损毁'),
+                  h(
+                    'div',
+                    { class: 'gc-ext-value buildings' },
+                    damageData.单步损害?.建筑损毁?.格式化 || '-'
+                  ),
+                ]),
+                damageData.单步损害?.城区损毁?.数量 > 0
+                  ? h('div', { class: 'gc-ext-item' }, [
+                      h('div', { class: 'gc-ext-label' }, '城区损毁'),
+                      h(
+                        'div',
+                        { class: 'gc-ext-value' },
+                        damageData.单步损害.城区损毁.格式化
+                      ),
+                    ])
+                  : null,
+              ]),
+              // 宏观破坏
+              damageData.宏观破坏
+                ? h('div', { class: 'gc-ext-macro' }, [
+                    h('div', { class: 'gc-ext-macro-title' }, [
+                      h('i', { class: 'fa-solid fa-globe' }),
+                      h('span', ` 宏观破坏力: ${damageData.宏观破坏.等级名称}`),
+                    ]),
+                    h(
+                      'div',
+                      { class: 'gc-ext-macro-list' },
+                      [
+                        damageData.宏观破坏.城市?.格式化,
+                        damageData.宏观破坏.国家?.格式化,
+                        damageData.宏观破坏.大陆?.格式化,
+                        damageData.宏观破坏.行星?.格式化,
+                        damageData.宏观破坏.恒星?.格式化,
+                        damageData.宏观破坏.星系?.格式化,
+                      ]
+                        .filter(Boolean)
+                        .map((text) => h('span', text))
+                    ),
+                  ])
+                : null,
+              // 特殊效应
+              damageData.特殊效应?.length > 0
+                ? h('div', { class: 'gc-ext-effects' }, [
+                    h('div', { class: 'gc-ext-effects-title' }, [
+                      h('i', { class: 'fa-solid fa-bolt' }),
+                      h('span', ' 物理效应'),
+                    ]),
+                    h(
+                      'div',
+                      { class: 'gc-ext-effects-list' },
+                      damageData.特殊效应.slice(0, 4).map((effect: string) =>
+                        h('span', { class: 'gc-ext-effect-tag' }, effect)
+                      )
+                    ),
+                  ])
+                : null,
+            ]
+          );
+        };
+      },
+    });
+  },
+
+  /**
+   * 贡献追加到主规则的损害记录规则
+   */
+  getRulesContribution(): string | null {
+    return `## 实际损害记录（可选）
+
+当巨大娘造成实际破坏时，可以记录累计损害数据：
+
+\`\`\`xml
+<gts_update>
+_.set('巨大娘.角色.{{角色名}}._实际损害.总伤亡人数', {{累计数字}});
+_.set('巨大娘.角色.{{角色名}}._实际损害.总建筑损毁', {{累计数字}});
+_.set('巨大娘.角色.{{角色名}}._实际损害.最近行动', {
+  描述: '{{行动描述}}',
+  伤亡人数: {{本次伤亡}},
+  建筑损毁: {{本次损毁}}
+});
+</gts_update>
+\`\`\`
+
+**注意**：
+- 系统计算的是「预估损害」（基于足迹和密度）
+- 此处记录的是「实际损害」（根据剧情发展）
+- 实际损害可能高于或低于预估，取决于具体情节`;
   },
 };
 

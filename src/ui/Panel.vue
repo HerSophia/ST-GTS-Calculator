@@ -36,30 +36,30 @@
       
       <!-- 功能按钮栏 -->
       <div class="gc-action-bar">
-        <button class="gc-icon-btn" @click="refreshCharacters" title="刷新数据">
+        <button class="gc-icon-btn" title="刷新数据" @click="refreshCharacters">
           <i class="fa-solid fa-rotate"></i>
         </button>
         <div class="gc-divider"></div>
         <button 
           v-if="settings.debug" 
           class="gc-icon-btn debug" 
-          @click="showDebug = !showDebug" 
-          :class="{ active: showDebug }" 
           title="调试面板"
+          :class="{ active: showDebug }" 
+          @click="showDebug = !showDebug" 
         >
           <i class="fa-solid fa-bug"></i>
         </button>
-        <button class="gc-icon-btn prompt" @click="showPrompts = !showPrompts" :class="{ active: showPrompts }" title="提示词管理">
+        <button class="gc-icon-btn prompt" title="提示词管理" :class="{ active: showPrompts }" @click="showPrompts = !showPrompts">
           <i class="fa-solid fa-file-lines"></i>
         </button>
-        <button class="gc-icon-btn worldview" @click="showWorldview = !showWorldview" :class="{ active: showWorldview }" title="世界观设定">
+        <button class="gc-icon-btn worldview" title="世界观设定" :class="{ active: showWorldview }" @click="showWorldview = !showWorldview">
           <i :class="currentWorldview?.icon || 'fa-solid fa-globe'"></i>
         </button>
         <div class="gc-divider"></div>
-        <button class="gc-icon-btn" @click="showSettings = !showSettings" :class="{ active: showSettings }" title="设置">
+        <button class="gc-icon-btn" title="设置" :class="{ active: showSettings }" @click="showSettings = !showSettings">
           <i class="fa-solid fa-gear"></i>
         </button>
-        <button class="gc-icon-btn" @click="showHelp = !showHelp" :class="{ active: showHelp }" title="帮助">
+        <button class="gc-icon-btn" title="帮助" :class="{ active: showHelp }" @click="showHelp = !showHelp">
           <i class="fa-regular fa-circle-question"></i>
         </button>
       </div>
@@ -139,13 +139,20 @@
         <!-- 快速计算器 -->
         <QuickCalc />
 
+        <!-- 当前场景 -->
+        <ScenarioDisplay :scenario="scenario" />
+
         <!-- 角色列表 -->
         <div class="gc-section">
           <div class="gc-section-header">
             <span><i class="fa-solid fa-users"></i> 角色列表</span>
             <span class="gc-badge-count">{{ characters.size }}</span>
           </div>
-          <CharacterList :characters="characters" :show-damage="settings.enableDamageCalculation" />
+          <CharacterList 
+            :characters="characters" 
+            :show-damage="settings.enableDamageCalculation" 
+            :show-items="settings.enableItemsSystem"
+          />
         </div>
 
         <!-- 扩展计算系统 -->
@@ -154,6 +161,8 @@
           :damage-summary="damageSummary"
           :damage-scenarios="damageScenariosList"
           @toggle-damage="onDamageToggle"
+          @toggle-items="onItemsToggle"
+          @toggle-message-display="onMessageDisplayToggle"
           @update:setting="updateSetting"
         />
       </div>
@@ -169,11 +178,14 @@ import { useCharactersStore } from '../characters';
 import { usePromptsStore, type PromptTemplate } from '../prompts';
 import { useWorldviewsStore, type Worldview } from '../worldviews';
 import { getMvuDebugInfo, injectTestData, clearTestData, type MvuDebugInfo } from '../mvu集成';
+import { writeActualDamage, clearActualDamage, syncVariablesToStore } from '../services/variables';
+import { extensionManager } from '../services/extensions';
 import { VERSION, CHANGELOG } from '../version';
 
 // 面板组件
 import { SettingsPanel, HelpPanel, WorldviewPanel, PromptsPanel, DebugPanel, ExtensionsPanel } from './panels';
 import QuickCalc from './features/QuickCalc.vue';
+import ScenarioDisplay from './features/ScenarioDisplay.vue';
 import CharacterList from './CharacterList.vue';
 
 import type { Settings } from '../types';
@@ -184,7 +196,7 @@ const { settings, debugLogs } = storeToRefs(settingsStore);
 const { toggle: toggleEnabled, clearDebugLogs } = settingsStore;
 
 const charactersStore = useCharactersStore();
-const { characters } = storeToRefs(charactersStore);
+const { characters, scenario } = storeToRefs(charactersStore);
 const { refresh: refreshCharacters, recalculateDamage, getDamageSummary } = charactersStore;
 
 const promptsStore = usePromptsStore();
@@ -248,11 +260,38 @@ function getDensityForScenario(id: string): number {
 
 const onDamageToggle = (enabled: boolean) => {
   settings.value.enableDamageCalculation = enabled;
+  // 同步扩展状态
   if (enabled) {
+    extensionManager.enable('damage-calculation');
     recalculateDamage();
     toastr.success('损害计算已启用');
   } else {
+    extensionManager.disable('damage-calculation');
     toastr.info('损害计算已禁用');
+  }
+};
+
+const onItemsToggle = (enabled: boolean) => {
+  settings.value.enableItemsSystem = enabled;
+  // 同步扩展状态
+  if (enabled) {
+    extensionManager.enable('items-system');
+    toastr.success('物品系统已启用');
+  } else {
+    extensionManager.disable('items-system');
+    toastr.info('物品系统已禁用');
+  }
+};
+
+const onMessageDisplayToggle = (enabled: boolean) => {
+  settings.value.enableMessageDisplay = enabled;
+  // 同步扩展状态
+  if (enabled) {
+    extensionManager.enable('message-display');
+    toastr.success('楼层数据显示已启用');
+  } else {
+    extensionManager.disable('message-display');
+    toastr.info('楼层数据显示已禁用');
   }
 };
 
@@ -333,12 +372,11 @@ const doClearTest = (name?: string) => {
 };
 
 const doSaveActualDamage = (params: { name: string; data: unknown }) => {
-  // 保存实际损害数据
+  // 保存实际损害数据（写入变量并同步到 Store）
   try {
-    const prefix = settings.value.variablePrefix;
-    const variables = getVariables({ type: 'message', message_id: 'latest' });
-    _.set(variables, `stat_data.${prefix}.${params.name}._实际损害`, params.data);
-    insertOrAssignVariables(variables, { type: 'message', message_id: 'latest' });
+    writeActualDamage(params.name, params.data);
+    // 同步变量到 Store
+    syncVariablesToStore();
     toastr.success(`已保存 ${params.name} 的实际损害数据`);
     setTimeout(() => { refreshMvuInfo(); refreshCharacters(); }, 300);
   } catch (e) {
@@ -348,8 +386,9 @@ const doSaveActualDamage = (params: { name: string; data: unknown }) => {
 
 const doClearActualDamage = (name: string) => {
   try {
-    const prefix = settings.value.variablePrefix;
-    deleteVariable(`stat_data.${prefix}.${name}._实际损害`, { type: 'message', message_id: 'latest' });
+    clearActualDamage(name);
+    // 同步变量到 Store
+    syncVariablesToStore();
     toastr.success(`已清除 ${name} 的实际损害数据`);
     setTimeout(() => { refreshMvuInfo(); refreshCharacters(); }, 300);
   } catch (e) {
@@ -546,14 +585,15 @@ watch(showDebug, (val) => {
 /* ========== 按钮栏 ========== */
 .gc-action-bar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  justify-content: flex-end;
+  width: fit-content;
   align-items: center;
-  padding: 6px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  justify-content: center;
+  gap: 4px;
+  margin: 0 auto 24px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .gc-divider {
@@ -561,11 +601,13 @@ watch(showDebug, (val) => {
   height: 20px;
   background: rgba(255, 255, 255, 0.1);
   margin: 0 4px;
+  flex-shrink: 0;
 }
 
 .gc-icon-btn {
   width: 36px;
   height: 36px;
+  min-width: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -578,6 +620,7 @@ watch(showDebug, (val) => {
   padding: 0;
   margin: 0;
   box-shadow: none;
+  flex: 0 0 auto;
 }
 
 .gc-icon-btn:hover {

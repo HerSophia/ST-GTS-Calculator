@@ -13,7 +13,7 @@ import type { ActualDamageRecord } from './types';
 export type { ActualDamageRecord };
 
 // 重导出 MVU 集成服务
-export { initMvuIntegration } from './services/mvu';
+export { initMvuIntegration, cleanupMvuIntegration } from './services/mvu';
 
 // 重导出调试相关类型和函数
 export type { DebugCharacterInfo, MvuDebugInfo } from './types';

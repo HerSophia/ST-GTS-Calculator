@@ -17,6 +17,8 @@ import type {
   DamageCalculation,
   Worldview,
 } from '../../types';
+import type { ScenarioData } from '../../stores/characters';
+import { POPULATION_DENSITY } from '../../core/damage';
 import {
   formatLength,
   generateDamagePrompt,
@@ -166,6 +168,65 @@ export function generateWorldviewPrompt(worldview: Worldview): string {
 }
 
 /**
+ * 格式化场景详情为文本
+ * 
+ * @param scenario 场景数据
+ * @returns 格式化的场景详情文本
+ */
+export function formatScenarioDetails(scenario?: ScenarioData | null): string {
+  if (!scenario || !scenario.当前场景) {
+    return '';
+  }
+
+  const lines: string[] = [];
+
+  if (scenario.具体地点) {
+    lines.push(`**具体地点**：${scenario.具体地点}`);
+  }
+
+  if (scenario.场景原因) {
+    lines.push(`**场景原因**：${scenario.场景原因}`);
+  }
+
+  if (scenario.场景时间) {
+    lines.push(`**当前时间**：${scenario.场景时间}`);
+  }
+
+  if (scenario.人群状态) {
+    lines.push(`**人群状态**：${scenario.人群状态}`);
+  }
+
+  // 获取人口密度信息
+  const density = POPULATION_DENSITY[scenario.当前场景];
+  if (density !== undefined) {
+    lines.push(`**人口密度**：约 ${density.toLocaleString()} 人/平方公里`);
+  }
+
+  return lines.length > 0 ? lines.join('\n') : '';
+}
+
+/**
+ * 生成可用场景列表文本
+ * 
+ * @returns 场景列表文本
+ */
+export function generateScenarioList(): string {
+  const categories = {
+    '户外场景': ['荒野', '乡村', '郊区', '小城市', '中等城市', '大城市', '超大城市中心'],
+    '特定城市': ['东京市中心', '香港', '马尼拉'],
+    '室内场景': ['住宅内', '公寓楼内', '办公楼内', '体育馆内'],
+    '特殊场景': ['巨大娘体内'],
+  };
+
+  const lines: string[] = [];
+  for (const [category, scenarios] of Object.entries(categories)) {
+    lines.push(`- **${category}**：${scenarios.join('、')}`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
  * 构建角色的提示词上下文
  * 
  * @param name 角色名
@@ -247,6 +308,11 @@ export function buildCharacterContext(
     世界观提示词: worldviewPrompt,
     世界观名称: options.worldview?.name || '',
     损害数据: damageText,
+    物品数据: '', // TODO: 由物品扩展填充
+    // 场景相关字段（将在 injector 中填充）
+    当前场景: '',
+    场景详情: '',
+    可用场景列表: generateScenarioList(),
   };
 }
 

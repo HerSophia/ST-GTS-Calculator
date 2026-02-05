@@ -388,16 +388,41 @@ function calculateMacroDestruction(
 // ==================== 主计算函数 ====================
 
 /**
+ * 损害计算选项
+ */
+export interface DamageCalculationOptions {
+  /** 场景类型（用于确定默认密度） */
+  scenario?: keyof typeof POPULATION_DENSITY;
+  /** 自定义人群密度（人/平方公里），优先级高于场景预设 */
+  customPopulationDensity?: number;
+  /** 自定义建筑密度（栋/平方公里），优先级高于场景预设 */
+  customBuildingDensity?: number;
+}
+
+/**
  * 计算巨大娘造成的损害
  * @param currentHeight 当前身高（米）
  * @param originalHeight 原身高（米）
- * @param scenario 场景类型（用于确定人口密度）
+ * @param scenarioOrOptions 场景类型或计算选项
  */
 export function calculateDamage(
   currentHeight: number,
   originalHeight: number = 1.65,
-  scenario: keyof typeof POPULATION_DENSITY = '大城市'
+  scenarioOrOptions: keyof typeof POPULATION_DENSITY | DamageCalculationOptions = '大城市'
 ): DamageCalculation {
+  // 解析参数
+  let scenario: keyof typeof POPULATION_DENSITY = '大城市';
+  let customPopDensity: number | undefined;
+  let customBuildDensity: number | undefined;
+  
+  if (typeof scenarioOrOptions === 'string') {
+    scenario = scenarioOrOptions;
+  } else {
+    scenario = scenarioOrOptions.scenario || '大城市';
+    customPopDensity = scenarioOrOptions.customPopulationDensity;
+    customBuildDensity = scenarioOrOptions.customBuildingDensity;
+  }
+  
   const scale = currentHeight / originalHeight;
   
   // 计算足迹数据
@@ -416,8 +441,9 @@ export function calculateDamage(
   };
   
   // 获取场景的人口密度和建筑密度
-  const popDensity = POPULATION_DENSITY[scenario] || POPULATION_DENSITY['大城市'];
-  const buildDensity = BUILDING_DENSITY[scenario] || BUILDING_DENSITY['大城市'];
+  // 自定义密度优先级高于场景预设
+  const popDensity = customPopDensity ?? (POPULATION_DENSITY[scenario] || POPULATION_DENSITY['大城市']);
+  const buildDensity = customBuildDensity ?? (BUILDING_DENSITY[scenario] || BUILDING_DENSITY['大城市']);
   
   // 计算单步损害
   // 人口伤亡（考虑20%-80%的逃生率，取决于速度和预警）

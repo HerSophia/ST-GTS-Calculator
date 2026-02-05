@@ -2,7 +2,7 @@
  * 巨大娘计算器 - 测试数据注入服务
  * 
  * 职责：
- * - 注入测试数据到 MVU 变量
+ * - 注入测试数据到楼层变量
  * - 清除测试数据
  * 
  * @module services/debug/test-injector
@@ -13,7 +13,7 @@ import { calculateGiantessData, calculateTinyData, calculateDamage } from '../..
 import { useSettingsStore } from '../../stores/settings';
 // 使用兼容层以获取完整的业务逻辑方法
 import { useCharactersStore } from '../../characters';
-import { addHeightHistory } from '../mvu/history';
+import { addHeightHistoryInternal, getCharacterPath } from '../variables';
 
 /**
  * 测试注入结果
@@ -54,22 +54,23 @@ export function injectTestData(
   try {
     // 从楼层变量读取和写入数据
     const variables = getVariables({ type: 'message', message_id: 'latest' });
+    const charPath = getCharacterPath(prefix, name);
 
     // 设置基础测试数据
-    _.set(variables, `stat_data.${prefix}.${name}.当前身高`, height);
-    _.set(variables, `stat_data.${prefix}.${name}.原身高`, originalHeight);
+    _.set(variables, `${charPath}.当前身高`, height);
+    _.set(variables, `${charPath}.原身高`, originalHeight);
     _.set(
       variables,
-      `stat_data.${prefix}.${name}.变化原因`,
+      `${charPath}.变化原因`,
       `调试测试(${isTiny ? '小人' : '巨大娘'})`
     );
-    _.set(variables, `stat_data.${prefix}.${name}.变化时间`, new Date().toLocaleString());
+    _.set(variables, `${charPath}.变化时间`, new Date().toLocaleString());
 
-    // 手动计算并写入 _计算数据（因为 insertOrAssignVariables 不会触发 MVU 事件）
+    // 手动计算并写入 _计算数据
     const calcResult = isTiny
       ? calculateTinyData(height, originalHeight)
       : calculateGiantessData(height, originalHeight);
-    _.set(variables, `stat_data.${prefix}.${name}._计算数据`, calcResult);
+    _.set(variables, `${charPath}._计算数据`, calcResult);
     settingsStore.debugLog(`📊 已计算 ${name} 的数据:`, {
       级别: calcResult.级别,
       倍率: calcResult.倍率,
@@ -87,7 +88,7 @@ export function injectTestData(
         originalHeight,
         damageScenario as Parameters<typeof calculateDamage>[2]
       );
-      _.set(variables, `stat_data.${prefix}.${name}._损害数据`, damageResult);
+      _.set(variables, `${charPath}._损害数据`, damageResult);
       settingsStore.debugLog(`💥 已计算 ${name} 的损害数据:`, {
         破坏力等级: damageResult.破坏力等级,
         单步伤亡: damageResult.单步损害.小人伤亡.格式化,
@@ -96,7 +97,7 @@ export function injectTestData(
     }
 
     // 记录身高历史
-    addHeightHistory(
+    addHeightHistoryInternal(
       variables,
       prefix,
       name,
@@ -117,7 +118,7 @@ export function injectTestData(
       changeReason: `调试测试(${isTiny ? '小人' : '巨大娘'})`,
       changeTime: new Date().toLocaleString(),
       calcData: calcResult,
-      damageData: _.get(variables, `stat_data.${prefix}.${name}._损害数据`),
+      damageData: _.get(variables, `${charPath}._损害数据`),
       history: [],
     });
     settingsStore.debugLog(`👤 已更新角色 Store`);
@@ -126,7 +127,7 @@ export function injectTestData(
 
     return {
       success: true,
-      data: _.get(variables, `stat_data.${prefix}.${name}`),
+      data: _.get(variables, charPath),
       isTiny,
     };
   } catch (e) {
@@ -153,7 +154,8 @@ export function clearTestData(name?: string): { success: boolean; error?: string
 
     if (name) {
       // 清除指定角色 - 使用 deleteVariable 删除指定路径
-      const result = deleteVariable(`stat_data.${prefix}.${name}`, messageOption);
+      const charPath = getCharacterPath(prefix, name);
+      const result = deleteVariable(charPath, messageOption);
       if (result.delete_occurred) {
         settingsStore.debugLog(`✅ 已清除角色: ${name}`);
       } else {

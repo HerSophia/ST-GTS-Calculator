@@ -2,7 +2,7 @@
  * 巨大娘计算器 - 调试信息收集服务
  * 
  * 职责：
- * - 收集 MVU 状态信息
+ * - 收集变量状态信息
  * - 收集角色详细信息
  * - 生成调试报告
  * 
@@ -14,9 +14,17 @@ import type {
   ScenarioMvuData,
   DebugCharacterInfo,
   MvuDebugInfo,
+  GiantessVariableData,
 } from '../../types';
 import { useSettingsStore } from '../../stores/settings';
 import { useWorldviewsStore } from '../../stores/worldviews';
+import { useCharactersStoreBase } from '../../stores/characters';
+import {
+  readGiantessData,
+  extractCharacters,
+  readScenarioData,
+  _internal_readGiantessData,
+} from '../variables';
 
 /**
  * 格式化大数字为可读字符串
@@ -83,37 +91,38 @@ function collectCharacterDebugInfo(
 }
 
 /**
- * 获取当前 MVU 变量状态（用于调试）
+ * 获取当前变量状态（用于调试）
+ * 
+ * 注意：此函数现在从 Store 读取数据，不再直接访问酒馆变量
+ * 如需查看原始变量数据，请使用 getRawVariableDebugInfo()
  */
 export function getMvuDebugInfo(): MvuDebugInfo {
   const settingsStore = useSettingsStore();
   const worldviewsStore = useWorldviewsStore();
+  const charactersStore = useCharactersStoreBase();
   const prefix = settingsStore.settings.variablePrefix;
 
   try {
-    // 从楼层变量读取数据
-    const messageVars = getVariables({ type: 'message', message_id: 'latest' });
+    // 从 Store 读取数据（使用公开 API）
+    const giantessData = readGiantessData() as GiantessVariableData | null;
+    const scenarioData = readScenarioData();
     const scriptVars = getVariables({ type: 'script', script_id: getScriptId() });
 
-    const giantessData = _.get(messageVars, `stat_data.${prefix}`) as
-      | Record<string, CharacterMvuData>
-      | undefined;
-    const scenarioData = _.get(messageVars, `stat_data.${prefix}._场景`) as
-      | ScenarioMvuData
-      | undefined;
-    const interactionData = _.get(messageVars, `stat_data.${prefix}._互动限制`);
+    // 从 Store 获取互动限制数据
+    const interactionData = charactersStore.getAllInteractions();
+    const hasInteractionData = Object.keys(interactionData).length > 0;
 
     // 收集角色详细信息
     const characterDetails: DebugCharacterInfo[] = [];
     if (giantessData) {
-      for (const [name, data] of Object.entries(giantessData)) {
-        if (name.startsWith('_')) continue;
+      const characters = extractCharacters(giantessData);
+      for (const [name, data] of Object.entries(characters)) {
         characterDetails.push(
           collectCharacterDebugInfo(
             name,
-            data as CharacterMvuData,
+            data,
             settingsStore.settings.damageScenario,
-            scenarioData
+            scenarioData as ScenarioMvuData | undefined
           )
         );
       }
@@ -121,7 +130,7 @@ export function getMvuDebugInfo(): MvuDebugInfo {
 
     // 确定当前场景来源
     const currentScenario = scenarioData?.当前场景 || settingsStore.settings.damageScenario;
-    const scenarioSource = scenarioData?.当前场景 ? 'MVU变量' : '默认设置';
+    const scenarioSource = scenarioData?.当前场景 ? 'Store（从变量同步）' : '默认设置';
 
     return {
       mvuAvailable: typeof Mvu !== 'undefined',
@@ -139,22 +148,30 @@ export function getMvuDebugInfo(): MvuDebugInfo {
         current: currentScenario,
         source: scenarioSource,
         reason: scenarioData?.场景原因,
+        // 扩展场景信息
+        具体地点: scenarioData?.具体地点,
+        场景时间: scenarioData?.场景时间,
+        人群状态: scenarioData?.人群状态,
+        人群密度: scenarioData?.人群密度,
+        isCustomDensity: !!(scenarioData?.人群密度 && scenarioData.人群密度 > 0),
       },
       worldview: {
         id: worldviewsStore.currentWorldviewId,
         name: worldviewsStore.currentWorldview.name,
       },
       messageVariables: {
-        hasStatData: !!_.get(messageVars, 'stat_data'),
+        hasStatData: !!giantessData,
         hasGiantessData: !!giantessData,
         hasScenarioData: !!scenarioData,
-        hasInteractionData: !!interactionData,
+        hasInteractionData,
         giantessCharacters: characterDetails.map((c) => c.name),
         characterDetails,
-        rawData: giantessData,
+        rawData: giantessData as Record<string, CharacterMvuData> | null,
       },
       scriptVariables: scriptVars,
       timestamp: new Date().toISOString(),
+      // 新增：数据来源标记
+      dataSource: 'Store',
     };
   } catch (e) {
     return {
@@ -188,6 +205,34 @@ export function getMvuDebugInfo(): MvuDebugInfo {
       },
       scriptVariables: null,
       timestamp: new Date().toISOString(),
+      dataSource: 'Store',
     };
   }
+}
+
+/**
+ * 获取原始变量数据（用于调试对比）
+ * 直接从酒馆变量读取，不经过 Store
+ */
+export function getRawVariableDebugInfo(): {
+  rawGiantessData: GiantessVariableData | null;
+  storeCharacterCount: number;
+  variableCharacterCount: number;
+  isInSync: boolean;
+} {
+  const charactersStore = useCharactersStoreBase();
+  
+  // 直接从变量读取
+  const rawData = _internal_readGiantessData({ messageId: 'latest' });
+  
+  // 计算角色数量
+  const storeCharacterCount = charactersStore.getCharacterNames().length;
+  const variableCharacterCount = rawData?.角色 ? Object.keys(rawData.角色).length : 0;
+  
+  return {
+    rawGiantessData: rawData,
+    storeCharacterCount,
+    variableCharacterCount,
+    isInSync: storeCharacterCount === variableCharacterCount,
+  };
 }

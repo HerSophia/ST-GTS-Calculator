@@ -1,12 +1,10 @@
 /**
  * 巨大娘计算器 - 初始化模块
- * 等待依赖就绪并初始化各模块
+ * 注入必要的外部资源并暴露全局 API
  */
 
-// 直接导入 MVU，让脚本自己初始化 MVU
-import 'https://testingcf.jsdelivr.net/gh/MagicalAstrogy/MagVarUpdate@beta/artifact/bundle.js';
-
 import { VERSION } from './version';
+import { exposeGlobalFunctions } from './services/global-api';
 
 $(() => {
   init();
@@ -24,13 +22,9 @@ function injectFontAwesome() {
 
 function init() {
   injectFontAwesome();
-  console.log('[GiantessCalc] 脚本初始化开始...');
-
-  // MVU 已通过 import 自动初始化，无需等待
-  console.log('[GiantessCalc] MVU 已通过内置导入初始化');
-
-  // 注意：MVU 集成和全局函数暴露已移至 设置界面.ts
-  // 因为它们需要在 Pinia 创建之后才能调用
-
-  console.log(`[GiantessCalc] ✅ 脚本预初始化完成 v${VERSION}`);
+  
+  // 暴露全局 API，使其可在控制台和其他脚本中使用
+  exposeGlobalFunctions();
+  
+  console.log(`[GiantessCalc] ✅ 脚本初始化完成 v${VERSION}`);
 }

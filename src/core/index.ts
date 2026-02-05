@@ -7,3 +7,4 @@ export * from './formatter';
 export * from './calculator';
 export * from './interactions';
 export * from './damage';
+export * from './items';

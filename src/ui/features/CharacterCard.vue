@@ -112,11 +112,16 @@
           </div>
         </template>
 
-        <!-- 损害数据插槽 -->
-        <slot name="damage" :damage-data="data.damageData"></slot>
+        <!-- 扩展内容区域 -->
+        <div class="gc-extension-content-area">
+          <!-- 扩展贡献的内容 -->
+          <slot name="extensions" :character="data" :expanded="isExpanded"></slot>
+        </div>
         
-        <!-- 实际损害插槽 -->
+        <!-- 保留旧插槽以向后兼容 -->
+        <slot name="damage" :damage-data="data.damageData"></slot>
         <slot name="actual-damage" :actual-damage="data.actualDamage"></slot>
+        <slot name="items" :items-data="data.itemsCalc"></slot>
 
         <!-- 身高历史 -->
         <template v-if="data.history && data.history.length > 0">

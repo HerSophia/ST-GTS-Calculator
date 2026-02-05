@@ -16,146 +16,233 @@
     
     <transition name="slide">
       <div v-show="!isSectionCollapsed" class="gc-extension-list">
-      <!-- 核心计算（始终开启） -->
-      <div class="gc-extension-item core">
-        <div class="gc-extension-icon">
-          <i class="fa-solid fa-calculator"></i>
-        </div>
-        <div class="gc-extension-info">
-          <div class="gc-extension-name">
-            基础计算
-            <GcBadge size="sm">核心</GcBadge>
-          </div>
-          <div class="gc-extension-desc">身体数据计算、相对尺寸参照</div>
-        </div>
-        <div class="gc-extension-toggle">
-          <span class="gc-always-on">始终开启</span>
-        </div>
-      </div>
-
-      <!-- 损害计算（可开关） -->
-      <div 
-        class="gc-extension-item" 
-        :class="{ 
-          active: settings.enableDamageCalculation,
-          clickable: settings.enableDamageCalculation
-        }"
-        @click="settings.enableDamageCalculation ? (isDamageExpanded = !isDamageExpanded) : null"
-      >
-        <div class="gc-extension-icon damage">
-          <i class="fa-solid fa-explosion"></i>
-        </div>
-        <div class="gc-extension-info">
-          <div class="gc-extension-name">
-            损害计算
-            <GcBadge v-if="settings.enableDamageCalculation" variant="success" size="sm">已启用</GcBadge>
-          </div>
-          <div class="gc-extension-desc">计算巨大娘行动可能造成的破坏</div>
-        </div>
-        <div class="gc-extension-toggle">
-          <div @click.stop class="gc-switch-wrapper">
-            <GcSwitch
-              :model-value="settings.enableDamageCalculation"
-              @update:model-value="$emit('toggle-damage', $event)"
-            />
-          </div>
-          <div v-if="settings.enableDamageCalculation" class="gc-expand-icon">
-            <i class="fa-solid" :class="isDamageExpanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- 损害计算设置 -->
-      <transition name="slide">
-        <div v-if="settings.enableDamageCalculation && isDamageExpanded" class="gc-extension-settings">
-          <div class="gc-setting-item">
-            <label>默认场景</label>
-            <select class="gc-input" :value="settings.damageScenario" @change="$emit('update:setting', 'damageScenario', ($event.target as HTMLSelectElement).value)">
-              <option
-                v-for="scenario in damageScenarios"
-                :key="scenario.id"
-                :value="scenario.id"
-              >
-                {{ scenario.name }} ({{ scenario.density.toLocaleString() }}人/km²)
-              </option>
-            </select>
-          </div>
-          
-          <div class="gc-setting-toggle">
-            <label>
-              <span>注入损害提示词</span>
-              <small>在提示词中包含损害计算结果</small>
-            </label>
-            <GcSwitch
-              size="sm"
-              :model-value="settings.injectDamagePrompt"
-              @update:model-value="$emit('update:setting', 'injectDamagePrompt', $event)"
-            />
-          </div>
-          
-          <div class="gc-setting-toggle">
-            <label>
-              <span>显示特殊效应</span>
-              <small>地震、海啸等物理效应</small>
-            </label>
-            <GcSwitch
-              size="sm"
-              :model-value="settings.showSpecialEffects"
-              @update:model-value="$emit('update:setting', 'showSpecialEffects', $event)"
-            />
-          </div>
-          
-          <div class="gc-setting-toggle">
-            <label>
-              <span>按角色显示损害</span>
-              <small>在角色卡片中显示损害数据</small>
-            </label>
-            <GcSwitch
-              size="sm"
-              :model-value="settings.showDamagePerCharacter"
-              @update:model-value="$emit('update:setting', 'showDamagePerCharacter', $event)"
-            />
-          </div>
-          
-          <div class="gc-setting-toggle">
-            <label>
-              <span>显示损害汇总</span>
-              <small>所有角色的损害统计</small>
-            </label>
-            <GcSwitch
-              size="sm"
-              :model-value="settings.showDamageSummary"
-              @update:model-value="$emit('update:setting', 'showDamageSummary', $event)"
-            />
-          </div>
-          
-          <!-- 损害预览 -->
-          <div v-if="damageSummary" class="gc-damage-preview">
-            <div class="gc-damage-preview-header">
-              <i class="fa-solid fa-chart-bar"></i>
-              <span>当前汇总</span>
+        <!-- 核心计算（始终开启） -->
+        <div class="gc-extension-wrapper">
+          <div class="gc-extension-item core">
+            <div class="gc-extension-icon">
+              <i class="fa-solid fa-calculator"></i>
             </div>
-            <div class="gc-damage-preview-content">
-              <div class="gc-damage-stat">
-                <span class="gc-damage-label">巨大娘数量</span>
-                <span class="gc-damage-value">{{ damageSummary.giantCount }}</span>
+            <div class="gc-extension-info">
+              <div class="gc-extension-name">
+                基础计算
+                <GcBadge size="sm">核心</GcBadge>
               </div>
-              <div class="gc-damage-stat">
-                <span class="gc-damage-label">预估单步伤亡</span>
-                <span class="gc-damage-value casualties">
-                  {{ formatDamageRange(damageSummary.totalCasualties) }}
-                </span>
-              </div>
-              <div class="gc-damage-stat">
-                <span class="gc-damage-label">预估建筑损毁</span>
-                <span class="gc-damage-value buildings">
-                  {{ formatDamageRange(damageSummary.totalBuildings) }}
-                </span>
-              </div>
+              <div class="gc-extension-desc">身体数据计算、相对尺寸参照</div>
+            </div>
+            <div class="gc-extension-toggle">
+              <span class="gc-always-on">始终开启</span>
             </div>
           </div>
         </div>
-      </transition>
+
+        <!-- 损害计算（可开关） -->
+        <div class="gc-extension-wrapper" :class="{ expanded: settings.enableDamageCalculation && isDamageExpanded }">
+          <div 
+            class="gc-extension-item" 
+            :class="{ 
+              active: settings.enableDamageCalculation,
+              clickable: settings.enableDamageCalculation
+            }"
+            @click="settings.enableDamageCalculation ? (isDamageExpanded = !isDamageExpanded) : null"
+          >
+            <div class="gc-extension-icon damage">
+              <i class="fa-solid fa-explosion"></i>
+            </div>
+            <div class="gc-extension-info">
+              <div class="gc-extension-name">
+                损害计算
+                <GcBadge v-if="settings.enableDamageCalculation" variant="success" size="sm">已启用</GcBadge>
+              </div>
+              <div class="gc-extension-desc">计算巨大娘行动可能造成的破坏</div>
+            </div>
+            <div class="gc-extension-toggle">
+              <div class="gc-switch-wrapper" @click.stop>
+                <GcSwitch
+                  :model-value="settings.enableDamageCalculation"
+                  @update:model-value="$emit('toggle-damage', $event)"
+                />
+              </div>
+              <div v-if="settings.enableDamageCalculation" class="gc-expand-icon">
+                <i class="fa-solid" :class="isDamageExpanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- 损害计算设置 -->
+          <transition name="slide">
+            <div v-if="settings.enableDamageCalculation && isDamageExpanded" class="gc-extension-settings">
+              <div class="gc-setting-item">
+                <label>默认场景</label>
+                <select class="gc-input" :value="settings.damageScenario" @change="$emit('update:setting', 'damageScenario', ($event.target as HTMLSelectElement).value)">
+                  <option
+                    v-for="scenario in damageScenarios"
+                    :key="scenario.id"
+                    :value="scenario.id"
+                  >
+                    {{ scenario.name }} ({{ scenario.density.toLocaleString() }}人/km²)
+                  </option>
+                </select>
+              </div>
+              
+              <div class="gc-setting-toggle">
+                <label>
+                  <span>注入损害提示词</span>
+                  <small>在提示词中包含损害计算结果</small>
+                </label>
+                <GcSwitch
+                  size="sm"
+                  :model-value="settings.injectDamagePrompt"
+                  @update:model-value="$emit('update:setting', 'injectDamagePrompt', $event)"
+                />
+              </div>
+              
+              <div class="gc-setting-toggle">
+                <label>
+                  <span>显示特殊效应</span>
+                  <small>地震、海啸等物理效应</small>
+                </label>
+                <GcSwitch
+                  size="sm"
+                  :model-value="settings.showSpecialEffects"
+                  @update:model-value="$emit('update:setting', 'showSpecialEffects', $event)"
+                />
+              </div>
+              
+              <div class="gc-setting-toggle">
+                <label>
+                  <span>按角色显示损害</span>
+                  <small>在角色卡片中显示损害数据</small>
+                </label>
+                <GcSwitch
+                  size="sm"
+                  :model-value="settings.showDamagePerCharacter"
+                  @update:model-value="$emit('update:setting', 'showDamagePerCharacter', $event)"
+                />
+              </div>
+              
+              <div class="gc-setting-toggle">
+                <label>
+                  <span>显示损害汇总</span>
+                  <small>所有角色的损害统计</small>
+                </label>
+                <GcSwitch
+                  size="sm"
+                  :model-value="settings.showDamageSummary"
+                  @update:model-value="$emit('update:setting', 'showDamageSummary', $event)"
+                />
+              </div>
+              
+              <!-- 损害预览 -->
+              <div v-if="damageSummary" class="gc-damage-preview">
+                <div class="gc-damage-preview-header">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <span>当前汇总</span>
+                </div>
+                <div class="gc-damage-preview-content">
+                  <div class="gc-damage-stat">
+                    <span class="gc-damage-label">巨大娘数量</span>
+                    <span class="gc-damage-value">{{ damageSummary.giantCount }}</span>
+                  </div>
+                  <div class="gc-damage-stat">
+                    <span class="gc-damage-label">预估单步伤亡</span>
+                    <span class="gc-damage-value casualties">
+                      {{ formatDamageRange(damageSummary.totalCasualties) }}
+                    </span>
+                  </div>
+                  <div class="gc-damage-stat">
+                    <span class="gc-damage-label">预估建筑损毁</span>
+                    <span class="gc-damage-value buildings">
+                      {{ formatDamageRange(damageSummary.totalBuildings) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </transition>
+        </div>
+
+        <!-- 物品系统（可开关） -->
+        <div class="gc-extension-wrapper" :class="{ expanded: settings.enableItemsSystem && isItemsExpanded }">
+          <div 
+            class="gc-extension-item" 
+            :class="{ 
+              active: settings.enableItemsSystem,
+              clickable: settings.enableItemsSystem
+            }"
+            @click="settings.enableItemsSystem ? (isItemsExpanded = !isItemsExpanded) : null"
+          >
+            <div class="gc-extension-icon items">
+              <i class="fa-solid fa-box"></i>
+            </div>
+            <div class="gc-extension-info">
+              <div class="gc-extension-name">
+                物品系统
+                <GcBadge v-if="settings.enableItemsSystem" variant="success" size="sm">已启用</GcBadge>
+              </div>
+              <div class="gc-extension-desc">管理角色物品，计算尺寸对比和互动可能性</div>
+            </div>
+            <div class="gc-extension-toggle">
+              <div class="gc-switch-wrapper" @click.stop>
+                <GcSwitch
+                  :model-value="settings.enableItemsSystem"
+                  @update:model-value="$emit('toggle-items', $event)"
+                />
+              </div>
+              <div v-if="settings.enableItemsSystem" class="gc-expand-icon">
+                <i class="fa-solid" :class="isItemsExpanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- 物品系统设置 -->
+          <transition name="slide">
+            <div v-if="settings.enableItemsSystem && isItemsExpanded" class="gc-extension-settings">
+              <div class="gc-setting-toggle">
+                <label>
+                  <span>注入物品提示词</span>
+                  <small>在提示词中包含物品数据</small>
+                </label>
+                <GcSwitch
+                  size="sm"
+                  :model-value="settings.injectItemsPrompt"
+                  @update:model-value="$emit('update:setting', 'injectItemsPrompt', $event)"
+                />
+              </div>
+              
+              <div class="gc-items-hint">
+                <i class="fa-solid fa-info-circle"></i>
+                <span>在世界书或提示词中使用 <code>_.set('巨大娘.角色.名称._物品.物品ID', {...})</code> 添加物品</span>
+              </div>
+            </div>
+          </transition>
+        </div>
+
+        <!-- 楼层数据显示（可开关） -->
+        <div class="gc-extension-wrapper">
+          <div 
+            class="gc-extension-item" 
+            :class="{ active: settings.enableMessageDisplay }"
+          >
+            <div class="gc-extension-icon display">
+              <i class="fa-solid fa-eye"></i>
+            </div>
+            <div class="gc-extension-info">
+              <div class="gc-extension-name">
+                楼层数据显示
+                <GcBadge v-if="settings.enableMessageDisplay" variant="success" size="sm">已启用</GcBadge>
+              </div>
+              <div class="gc-extension-desc">在消息楼层内直接显示角色身高体型数据</div>
+            </div>
+            <div class="gc-extension-toggle">
+              <div class="gc-switch-wrapper" @click.stop>
+                <GcSwitch
+                  :model-value="settings.enableMessageDisplay"
+                  @update:model-value="$emit('toggle-message-display', $event)"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </transition>
   </div>
@@ -174,16 +261,24 @@ const props = defineProps<{
 
 defineEmits<{
   (e: 'toggle-damage', value: boolean): void;
+  (e: 'toggle-items', value: boolean): void;
+  (e: 'toggle-message-display', value: boolean): void;
   (e: 'update:setting', key: keyof Settings, value: unknown): void;
 }>();
 
 // 状态控制
 const isSectionCollapsed = ref(false);
 const isDamageExpanded = ref(true);
+const isItemsExpanded = ref(true);
 
 // 当启用损害计算时，自动展开设置
 watch(() => props.settings.enableDamageCalculation, (val) => {
   if (val) isDamageExpanded.value = true;
+});
+
+// 当启用物品系统时，自动展开设置
+watch(() => props.settings.enableItemsSystem, (val) => {
+  if (val) isItemsExpanded.value = true;
 });
 
 const formatDamageRange = (range: { min: number; max: number } | undefined) => {
@@ -247,6 +342,18 @@ const formatDamageRange = (range: { min: number; max: number } | undefined) => {
   gap: 8px;
 }
 
+/* 扩展项包装器 - 让设置面板正确嵌套在扩展项下方 */
+.gc-extension-wrapper {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.gc-extension-wrapper.expanded {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .gc-extension-item {
   display: flex;
   align-items: center;
@@ -256,6 +363,10 @@ const formatDamageRange = (range: { min: number; max: number } | undefined) => {
   border-radius: 8px;
   border: 1px solid transparent;
   transition: all 0.2s;
+}
+
+.gc-extension-wrapper.expanded .gc-extension-item {
+  border-radius: 8px 8px 0 0;
 }
 
 .gc-extension-item:hover {
@@ -297,6 +408,24 @@ const formatDamageRange = (range: { min: number; max: number } | undefined) => {
 
 .gc-extension-item.active .gc-extension-icon.damage {
   color: #ef4444;
+}
+
+.gc-extension-icon.items {
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+}
+
+.gc-extension-item.active .gc-extension-icon.items {
+  color: #6366f1;
+}
+
+.gc-extension-icon.display {
+  background: rgba(34, 211, 238, 0.1);
+  color: #67e8f9;
+}
+
+.gc-extension-item.active .gc-extension-icon.display {
+  color: #22d3ee;
 }
 
 .gc-extension-info {
@@ -347,14 +476,15 @@ const formatDamageRange = (range: { min: number; max: number } | undefined) => {
   border-radius: 4px;
 }
 
+/* 设置面板样式 - 嵌套在扩展项下方 */
 .gc-extension-settings {
-  padding: 12px;
+  padding: 12px 12px 12px 60px;
   background: rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
-  margin-left: 48px;
+  border-radius: 0 0 8px 8px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .gc-setting-item {
@@ -444,6 +574,32 @@ const formatDamageRange = (range: { min: number; max: number } | undefined) => {
 
 .gc-damage-value.buildings {
   color: #fbbf24;
+}
+
+/* 物品系统样式 */
+.gc-items-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 6px;
+  font-size: 0.8em;
+  color: #a5b4fc;
+}
+
+.gc-items-hint i {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.gc-items-hint code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+  color: #c7d2fe;
 }
 
 .slide-enter-active,

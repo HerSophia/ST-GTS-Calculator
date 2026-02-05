@@ -160,17 +160,45 @@ export function needsRecalculation(
   existingCalcData?: GiantessData | TinyData
 ): boolean {
   const currentHeight = rawData.当前身高 || rawData.身高;
+  const originalHeight = rawData.原身高 || rawData.原始身高;
+  
+  // 调试输出
+  console.log('[GiantessCalc] needsRecalculation 输入:', {
+    rawData_当前身高: rawData.当前身高,
+    rawData_身高: rawData.身高,
+    rawData_原身高: rawData.原身高,
+    rawData_原始身高: rawData.原始身高,
+    currentHeight,
+    originalHeight,
+    existingCalcData_原身高: existingCalcData?.原身高,
+    existingCalcData_当前身高: existingCalcData?.当前身高,
+  });
   
   if (!currentHeight) {
+    console.log('[GiantessCalc] needsRecalculation: 无当前身高，返回 false');
     return false;
   }
   
   if (!existingCalcData) {
+    console.log('[GiantessCalc] needsRecalculation: 无已有计算数据，返回 true');
     return true;
   }
   
-  // 身高变化
+  // 当前身高变化
   if (existingCalcData.当前身高 !== currentHeight) {
+    console.log('[GiantessCalc] needsRecalculation: 当前身高变化，返回 true', {
+      old: existingCalcData.当前身高,
+      new: currentHeight,
+    });
+    return true;
+  }
+  
+  // 原身高变化（重要：原身高影响倍率和所有身体部位的计算）
+  if (originalHeight !== undefined && existingCalcData.原身高 !== originalHeight) {
+    console.log('[GiantessCalc] needsRecalculation: 原身高变化，返回 true', {
+      old: existingCalcData.原身高,
+      new: originalHeight,
+    });
     return true;
   }
   
@@ -179,9 +207,11 @@ export function needsRecalculation(
   const oldCustomParts = (existingCalcData as GiantessData).自定义部位 || {};
   
   if (JSON.stringify(newCustomParts) !== JSON.stringify(oldCustomParts)) {
+    console.log('[GiantessCalc] needsRecalculation: 自定义部位变化，返回 true');
     return true;
   }
   
+  console.log('[GiantessCalc] needsRecalculation: 无变化，返回 false');
   return false;
 }
 

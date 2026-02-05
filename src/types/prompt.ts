@@ -12,6 +12,8 @@ export type PromptTemplateType =
   | 'rules'
   | 'worldview'
   | 'damage'
+  | 'items'
+  | 'scenario'
   | 'footer';
 
 /**
@@ -29,8 +31,10 @@ export interface PromptTemplate {
   type: PromptTemplateType;
   /** 是否为系统内置（不可删除） */
   builtin?: boolean;
+  /** 是否为只读（不可编辑内容，仅可开关） */
+  readonly?: boolean;
   /** 是否依赖特定功能开关 */
-  requiresFeature?: 'damageCalculation';
+  requiresFeature?: 'damageCalculation' | 'itemsSystem';
 }
 
 /**
@@ -54,6 +58,14 @@ export interface PromptContext {
   世界观名称: string;
   /** 损害计算数据 */
   损害数据: string;
+  /** 物品数据 */
+  物品数据: string;
+  /** 当前场景名称 */
+  当前场景: string;
+  /** 场景详情描述 */
+  场景详情: string;
+  /** 可用场景列表 */
+  可用场景列表: string;
   /** 允许额外的自定义字段 */
   [key: string]: string | number;
 }

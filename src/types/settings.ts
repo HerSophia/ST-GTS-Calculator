@@ -63,6 +63,13 @@ export interface Settings {
   showSpecialEffects: boolean;
   showDamagePerCharacter: boolean;
   showDamageSummary: boolean;
+
+  // 物品系统设置
+  enableItemsSystem: boolean;
+  injectItemsPrompt: boolean;
+
+  // 楼层数据显示设置
+  enableMessageDisplay: boolean;
 }
 
 /**

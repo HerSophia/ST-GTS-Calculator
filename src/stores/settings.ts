@@ -61,7 +61,7 @@ const Settings = z
     // MVU 集成
     variablePrefix: z.string().default('巨大娘'),
     autoInject: z.boolean().default(true),
-    injectDepth: z.number().default(1),
+    injectDepth: z.number().default(9999),
     injectInteractionLimits: z.boolean().default(true),
 
     // 计算设置
@@ -85,6 +85,13 @@ const Settings = z
     showSpecialEffects: z.boolean().default(true),
     showDamagePerCharacter: z.boolean().default(true),
     showDamageSummary: z.boolean().default(true),
+
+    // 物品系统设置
+    enableItemsSystem: z.boolean().default(false),
+    injectItemsPrompt: z.boolean().default(true),
+
+    // 楼层数据显示设置
+    enableMessageDisplay: z.boolean().default(false),
   })
   .prefault({});
 

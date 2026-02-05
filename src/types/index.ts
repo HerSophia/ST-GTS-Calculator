@@ -79,6 +79,9 @@ export type {
   Extension,
   ExtensionRegistry,
   ExtensionState,
+  ExtensionInfo,
+  ExtensionAPI,
+  CharacterCardContext,
 } from './extension';
 
 // 世界观相关
@@ -96,3 +99,39 @@ export type {
   GitHubReleaseAsset,
   GitHubReleaseResponse,
 } from './updater';
+
+// 变量服务相关
+export type {
+  ParsedUpdate,
+  SyncResult,
+  CharacterUpdateData,
+  ReadOptions,
+  WriteOptions,
+  EventHandlerConfig,
+  VariableServiceStatus,
+  CalculationData,
+  CharacterFullData,
+  GiantessVariableData,
+} from './variables';
+
+// 正则服务相关
+export type {
+  TavernRegexConfig,
+  RegexRegistrationOptions,
+  RegexRegistrationResult,
+  RegexServiceState,
+} from './regex';
+
+// 物品系统相关
+export type {
+  ItemDimensions,
+  ItemType,
+  ItemMaterial,
+  ItemDefinition,
+  ItemRelativeReference,
+  ItemInteraction,
+  ItemCalculation,
+  CharacterItems,
+  CharacterItemsCalculation,
+  PresetItem,
+} from './item';

@@ -232,7 +232,7 @@ const decrementDepth = () => {
 };
 
 const incrementDepth = () => {
-  if (props.settings.injectDepth < 10) {
+  if (props.settings.injectDepth < 9999) {
     updateSetting('injectDepth', props.settings.injectDepth + 1);
   }
 };
