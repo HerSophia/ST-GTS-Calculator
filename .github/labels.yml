@@ -1,0 +1,75 @@
+# GitHub Labels 配置
+# 使用 github-label-sync 工具同步: npx github-label-sync --labels .github/labels.yml HerSophia/ST-GTS-Calculator
+# 或手动在 GitHub 设置页面创建
+
+# 类型标签
+- name: bug
+  color: "d73a4a"
+  description: "Bug 报告"
+
+- name: enhancement
+  color: "a2eeef"
+  description: "新功能或改进"
+
+- name: documentation
+  color: "0075ca"
+  description: "文档相关"
+
+- name: dependencies
+  color: "0366d6"
+  description: "依赖更新"
+
+- name: CI
+  color: "5319e7"
+  description: "CI/CD 相关"
+
+# 状态标签
+- name: 待分类
+  color: "fbca04"
+  description: "等待分类处理"
+
+- name: 待讨论
+  color: "d4c5f9"
+  description: "需要进一步讨论"
+
+- name: 进行中
+  color: "1d76db"
+  description: "正在处理中"
+
+- name: 已完成
+  color: "0e8a16"
+  description: "已完成"
+
+- name: 不会修复
+  color: "ffffff"
+  description: "不会修复或超出范围"
+
+- name: 重复
+  color: "cfd3d7"
+  description: "重复的 Issue"
+
+# 优先级标签
+- name: "优先级: 高"
+  color: "b60205"
+  description: "高优先级"
+
+- name: "优先级: 中"
+  color: "fbca04"
+  description: "中优先级"
+
+- name: "优先级: 低"
+  color: "0e8a16"
+  description: "低优先级"
+
+# 特殊标签
+- name: "good first issue"
+  color: "7057ff"
+  description: "适合新手贡献者"
+
+- name: "help wanted"
+  color: "008672"
+  description: "需要帮助"
+
+- name: 自动更新
+  color: "ededed"
+  description: "由 Dependabot 自动创建"

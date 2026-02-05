@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 文档
+    url: https://github.com/HerSophia/ST-GTS-Calculator/blob/main/docs/README.md
+    about: 查看项目文档
+  - name: 💬 讨论
+    url: https://github.com/HerSophia/ST-GTS-Calculator/discussions
+    about: 一般性问题和讨论请使用 Discussions

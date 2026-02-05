@@ -1,0 +1,16 @@
+# 代码所有者配置
+# 当这些文件被修改时，会自动请求对应人员 Review
+# 文档: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# 默认所有者（所有文件）
+* @HerSophia
+
+# 核心计算逻辑
+/src/core/ @HerSophia
+
+# 文档
+/docs/ @HerSophia
+*.md @HerSophia
+
+# CI/CD 配置
+/.github/ @HerSophia
