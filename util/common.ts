@@ -9,6 +9,14 @@ export function assignInplace<T>(destination: T[], new_array: T[]): T[] {
   return destination;
 }
 
+<<<<<<< HEAD
+=======
+// 修正 _.merge 对数组的合并逻辑, [1, 2, 3] 和 [4, 5] 合并后变成 [4, 5] 而不是 [4, 5, 3]
+export function correctlyMerge<TObject, TSource>(lhs: TObject, rhs: TSource): TObject & TSource {
+    return _.mergeWith(lhs, rhs, (_lhs, rhs) => (_.isArray(rhs) ? rhs : undefined));
+}
+
+>>>>>>> aa841a49033c68257c3428266534ebbec92e7fb2
 export function chunkBy<T>(array: T[], predicate: (lhs: T, rhs: T) => boolean): T[][] {
   if (array.length === 0) {
     return [];
@@ -116,3 +124,19 @@ export function parseString(content: string): any {
   }
   return parsed;
 }
+<<<<<<< HEAD
+=======
+
+export async function checkAndUpdateCharacter(name: string, latest_version: string, png_url: string): Promise<void> {
+  const current_version = (await getCharacter(name)).version.trim() || '0.0.0';
+  if (compare(current_version, latest_version, '>=')) {
+    return;
+  }
+  await importRawCharacter(name, await fetch(png_url).then(response => response.blob()));
+  replaceCharacter(name, { version: latest_version });
+  toastr.success(
+    `角色卡已自动更新到 '${latest_version.startsWith('v') ? latest_version : `v${latest_version}`}'`,
+    name,
+  );
+}
+>>>>>>> aa841a49033c68257c3428266534ebbec92e7fb2
