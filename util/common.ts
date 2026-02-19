@@ -9,6 +9,14 @@ export function assignInplace<T>(destination: T[], new_array: T[]): T[] {
   return destination;
 }
 
+<<<<<<< HEAD
+=======
+// 修正 _.merge 对数组的合并逻辑, [1, 2, 3] 和 [4, 5] 合并后变成 [4, 5] 而不是 [4, 5, 3]
+export function correctlyMerge<TObject, TSource>(lhs: TObject, rhs: TSource): TObject & TSource {
+  return _.mergeWith(lhs, rhs, (_lhs, rhs) => (_.isArray(rhs) ? rhs : undefined));
+}
+
+>>>>>>> 8ff6bdca565e1a9dbd2d942472c26419a7132006
 export function chunkBy<T>(array: T[], predicate: (lhs: T, rhs: T) => boolean): T[][] {
   if (array.length === 0) {
     return [];

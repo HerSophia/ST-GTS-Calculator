@@ -97,7 +97,11 @@ function watch_tavern_helper(compiler: webpack.Compiler) {
 
     compiler.hooks.done.tap('watch_tavern_helper', () => {
       console.info('\n\x1b[36m[tavern_helper]\x1b[0m 检测到完成编译, 推送更新事件...');
+<<<<<<< HEAD
       if (compiler.options.plugins.find(plugin => plugin instanceof HtmlWebpackPlugin)) {
+=======
+      if (compiler.options.plugins.some(plugin => plugin instanceof HtmlWebpackPlugin)) {
+>>>>>>> 8ff6bdca565e1a9dbd2d942472c26419a7132006
         io.emit('message_iframe_updated');
       } else {
         io.emit('script_iframe_updated');
@@ -539,7 +543,11 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
       }
 
       if (
+<<<<<<< HEAD
         ['vue', 'vue-router', 'pixi.js'].every(key => request !== key) &&
+=======
+        ['vue', 'vue-router'].every(key => request !== key) &&
+>>>>>>> 8ff6bdca565e1a9dbd2d942472c26419a7132006
         ['pixi', 'react', 'vue'].some(key => request.includes(key))
       ) {
         return callback();
@@ -553,7 +561,10 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
         'vue-router': 'VueRouter',
         yaml: 'YAML',
         zod: 'z',
+<<<<<<< HEAD
         'pixi.js': 'PIXI',
+=======
+>>>>>>> 8ff6bdca565e1a9dbd2d942472c26419a7132006
       };
       if (request in global) {
         return callback(null, 'var ' + global[request as keyof typeof global]);
