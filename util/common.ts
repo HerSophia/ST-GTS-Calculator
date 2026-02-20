@@ -1,5 +1,8 @@
 import { compare } from 'compare-versions';
+<<<<<<< HEAD
 import JSON5 from 'json5';
+=======
+>>>>>>> d8b37673c7eb2745a3439060fbf772c95799b9eb
 import { jsonrepair } from 'jsonrepair';
 import { toDotPath } from 'zod/v4/core';
 
@@ -9,6 +12,14 @@ export function assignInplace<T>(destination: T[], new_array: T[]): T[] {
   return destination;
 }
 
+<<<<<<< HEAD
+=======
+// 修正 _.merge 对数组的合并逻辑, [1, 2, 3] 和 [4, 5] 合并后变成 [4, 5] 而不是 [4, 5, 3]
+export function correctlyMerge<TObject, TSource>(lhs: TObject, rhs: TSource): TObject & TSource {
+  return _.mergeWith(lhs, rhs, (_lhs, rhs) => (_.isArray(rhs) ? rhs : undefined));
+}
+
+>>>>>>> d8b37673c7eb2745a3439060fbf772c95799b9eb
 export function chunkBy<T>(array: T[], predicate: (lhs: T, rhs: T) => boolean): T[][] {
   if (array.length === 0) {
     return [];
@@ -89,6 +100,7 @@ export function literalYamlify(value: any) {
 }
 
 export function parseString(content: string): any {
+<<<<<<< HEAD
   let parsed: unknown;
   try {
     parsed = YAML.parseDocument(content, { merge: true }).toJS();
@@ -110,9 +122,29 @@ export function parseString(content: string): any {
               尝试修复JSON时的错误信息: toError(json_error),
             },
           }),
+=======
+  const json_first = /^[[{]/s.test(content.trimStart());
+  try {
+    return json_first ? JSON.parse(jsonrepair(content)) : YAML.parseDocument(content, { merge: true }).toJS();
+  } catch (e1) {
+    try {
+      return json_first ? YAML.parseDocument(content, { merge: true }).toJS() : JSON.parse(jsonrepair(content));
+    } catch (e2) {
+      const toError = (error: unknown) =>
+        error instanceof Error ? `${error.stack ? error.stack : error.message}` : String(error);
+
+      const error = { 字符串内容: content };
+      _.set(error, json_first ? 'JSON错误信息' : 'YAML错误信息', toError(e1));
+      _.set(error, json_first ? 'YAML错误信息' : 'JSON错误信息', toError(e2));
+      throw new Error(
+        literalYamlify({ [`要解析的字符串不是有效的 ${json_first ? 'JSON/YAML' : 'YAML/JSON'} 格式`]: error }),
+>>>>>>> d8b37673c7eb2745a3439060fbf772c95799b9eb
         );
       }
     }
   }
+<<<<<<< HEAD
   return parsed;
 }
+=======
+>>>>>>> d8b37673c7eb2745a3439060fbf772c95799b9eb
