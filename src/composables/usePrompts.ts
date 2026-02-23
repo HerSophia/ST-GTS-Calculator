@@ -36,7 +36,7 @@ export function usePrompts() {
    * 启用的模板列表
    */
   const enabledTemplates = computed(() => 
-    templates.value.filter(t => t.enabled)
+    templates.value.filter(t => t.enabled).sort((a, b) => a.order - b.order)
   );
 
   /**

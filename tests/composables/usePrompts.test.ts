@@ -221,8 +221,9 @@ describe('Composable: usePrompts', () => {
       const { templates, moveTemplate } = usePrompts();
 
       if (templates.value.length > 0) {
-        moveTemplate(templates.value[0].id, 'down');
-        expect(moveSpy).toHaveBeenCalledWith(templates.value[0].id, 'down');
+        const firstId = templates.value[0].id;
+        moveTemplate(firstId, 'down');
+        expect(moveSpy).toHaveBeenCalledWith(firstId, 'down');
       }
     });
   });

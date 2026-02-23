@@ -2,9 +2,20 @@
  * 巨大娘计算器 - 版本信息
  */
 
-export const VERSION = '3.4.0';
+export const VERSION = '3.5.0';
 
 export const CHANGELOG = [
+  {
+    version: '3.5.0',
+    date: '2025-01',
+    changes: [
+      '📖 **玩法指导扩展 & 修复**',
+      '',
+      '由于巨娘之神在不断催更，上一个开发者已经被踩死（bushi）',
+      '修复：一些提示词相关的 bug',
+      '新增：全新扩展「玩法指导」- 为 AI 提供玩法引导与行为建议',
+    ],
+  },
   {
     version: '3.4.0',
     date: '2025-01',

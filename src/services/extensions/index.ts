@@ -8,11 +8,14 @@ export { extensionManager } from './manager';
 export { damageExtension, DAMAGE_EXTENSION_ID, generateDamagePromptForCharacter } from './damage-extension';
 export { itemsExtension, ITEMS_EXTENSION_ID, generateItemsPromptForCharacter, getPresetItems } from './item-extension';
 export { messageDisplayExtension, MESSAGE_DISPLAY_EXTENSION_ID } from './message-display-extension';
+export { playGuideExtension, PLAY_GUIDE_EXTENSION_ID } from './play-guide-extension';
+export { PLAY_GUIDE_DEFINITIONS, getPlayGuideById, type PlayGuideDefinition } from './play-guide-prompts';
 
 import { extensionManager } from './manager';
 import { damageExtension } from './damage-extension';
 import { itemsExtension } from './item-extension';
 import { messageDisplayExtension } from './message-display-extension';
+import { playGuideExtension } from './play-guide-extension';
 import { useSettingsStore } from '../../stores/settings';
 
 /**
@@ -32,6 +35,10 @@ export function registerBuiltinExtensions(): void {
   // 注册楼层数据显示扩展
   extensionManager.register(messageDisplayExtension);
   console.log('[Extensions] - 楼层数据显示扩展已注册');
+  
+  // 注册玩法指导扩展
+  extensionManager.register(playGuideExtension);
+  console.log('[Extensions] - 玩法指导扩展已注册');
   
   // 未来可以在这里注册更多内置扩展
   // extensionManager.register(voreExtension);
@@ -65,6 +72,11 @@ export function initExtensions(): void {
     // 如果用户之前启用了楼层数据显示，自动启用扩展
     if (settingsStore.settings.enableMessageDisplay) {
       extensionManager.enable('message-display');
+    }
+    
+    // 如果用户之前启用了玩法指导，自动启用扩展
+    if (settingsStore.settings.enablePlayGuide) {
+      extensionManager.enable('play-guide');
     }
     
     // 初始化默认启用的扩展
@@ -102,5 +114,12 @@ export function syncExtensionsWithSettings(): void {
     extensionManager.enable('message-display');
   } else {
     extensionManager.disable('message-display');
+  }
+  
+  // 同步玩法指导扩展状态
+  if (settingsStore.settings.enablePlayGuide) {
+    extensionManager.enable('play-guide');
+  } else {
+    extensionManager.disable('play-guide');
   }
 }

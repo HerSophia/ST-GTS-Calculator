@@ -68,8 +68,31 @@ export interface Settings {
   enableItemsSystem: boolean;
   injectItemsPrompt: boolean;
 
+  // 玩法指导设置
+  enablePlayGuide: boolean;
+  enabledPlayGuides: string[];
+  customPlayGuideContents: Record<string, string>;
+  /** 用户自定义的玩法指导（完全由用户创建，非内置） */
+  customPlayGuides: CustomPlayGuide[];
+
   // 楼层数据显示设置
   enableMessageDisplay: boolean;
+}
+
+/**
+ * 用户自定义玩法指导
+ */
+export interface CustomPlayGuide {
+  /** 唯一标识（自动生成） */
+  id: string;
+  /** 显示名称 */
+  name: string;
+  /** 简短描述 */
+  description: string;
+  /** 图标 (FontAwesome class) */
+  icon: string;
+  /** 提示词内容 */
+  content: string;
 }
 
 /**

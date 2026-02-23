@@ -14,7 +14,8 @@ export type PromptTemplateType =
   | 'damage'
   | 'items'
   | 'scenario'
-  | 'footer';
+  | 'footer'
+  | 'guide';
 
 /**
  * 提示词模板定义
@@ -34,7 +35,7 @@ export interface PromptTemplate {
   /** 是否为只读（不可编辑内容，仅可开关） */
   readonly?: boolean;
   /** 是否依赖特定功能开关 */
-  requiresFeature?: 'damageCalculation' | 'itemsSystem';
+  requiresFeature?: 'damageCalculation' | 'itemsSystem' | 'playGuide';
 }
 
 /**

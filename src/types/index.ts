@@ -5,6 +5,7 @@
 // 设置相关
 export type {
   Settings,
+  CustomPlayGuide,
   DamageSummary,
   DebugLogEntry,
   DamageScenarioInfo,

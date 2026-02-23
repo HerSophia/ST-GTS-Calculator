@@ -33,7 +33,7 @@ import {
  * @returns 插值后的字符串
  */
 export function interpolate(template: string, context: Partial<PromptContext>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+  return template.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
     const value = (context as Record<string, unknown>)[key];
     if (value !== undefined) {
       return String(value);

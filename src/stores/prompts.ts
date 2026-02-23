@@ -368,9 +368,9 @@ export const usePromptsStore = defineStore('giantess-calculator-prompts', () => 
   });
 
   // ========== 计算属性 ==========
-  // order 降序排列：order 越大越靠前（在长上下文中更突出）
+  // order 升序排列：order 越小越靠前（与 UI 显示顺序一致）
   const enabledTemplates = computed(() =>
-    templates.value.filter(t => t.enabled).sort((a, b) => b.order - a.order)
+    templates.value.filter(t => t.enabled).sort((a, b) => a.order - b.order)
   );
 
   // ========== CRUD 操作 ==========
@@ -389,14 +389,15 @@ export const usePromptsStore = defineStore('giantess-calculator-prompts', () => 
   };
 
   const addTemplate = (template: Omit<PromptTemplate, 'id' | 'order' | 'builtin'>) => {
-    // order 越大越靠前，新模板放在最后（order 最小）
-    const minOrder = Math.min(...templates.value.map(t => t.order), 9960);
-    templates.value.push({
+    // 升序排列：order 越小越靠前，新模板放在最后（order 最大）
+    const maxOrder = Math.max(...templates.value.map(t => t.order), 0);
+    const newTemplate: PromptTemplate = {
       ...template,
       id: `custom-${Date.now()}`,
-      order: minOrder - 10,
+      order: maxOrder + 10,
       builtin: false,
-    });
+    };
+    templates.value = [...templates.value, newTemplate].sort((a, b) => a.order - b.order);
   };
 
   const removeTemplate = (id: string) => {
@@ -411,13 +412,13 @@ export const usePromptsStore = defineStore('giantess-calculator-prompts', () => 
     const builtinIds = DEFAULT_TEMPLATES.filter(t => t.builtin).map(t => t.id);
     const customTemplates = templates.value.filter(t => !builtinIds.includes(t.id) && !t.builtin);
     
-    // 合并默认模板和用户自定义模板（降序：order 越大越靠前）
-    templates.value = [...DEFAULT_TEMPLATES, ...customTemplates].sort((a, b) => b.order - a.order);
+    // 合并默认模板和用户自定义模板（升序：order 越小越靠前）
+    templates.value = [...DEFAULT_TEMPLATES, ...customTemplates].sort((a, b) => a.order - b.order);
   };
 
   const moveTemplate = (id: string, direction: 'up' | 'down') => {
-    // 降序排列：order 越大越靠前
-    const sorted = [...templates.value].sort((a, b) => b.order - a.order);
+    // 升序排列：order 越小越靠前（与 UI 显示顺序一致）
+    const sorted = [...templates.value].sort((a, b) => a.order - b.order);
     const index = sorted.findIndex(t => t.id === id);
     
     if (index === -1) return;
@@ -425,9 +426,14 @@ export const usePromptsStore = defineStore('giantess-calculator-prompts', () => 
     if (direction === 'down' && index === sorted.length - 1) return;
     
     const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    // 交换 order 值（sorted 中的对象是原始引用）
     const tempOrder = sorted[index].order;
     sorted[index].order = sorted[swapIndex].order;
     sorted[swapIndex].order = tempOrder;
+    
+    // 重新赋值排序后的数组，触发 Vue 响应式更新
+    templates.value = sorted.sort((a, b) => a.order - b.order);
   };
 
   const getTemplate = (id: string): PromptTemplate | undefined => {

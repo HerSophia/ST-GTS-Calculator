@@ -90,6 +90,22 @@ const Settings = z
     enableItemsSystem: z.boolean().default(false),
     injectItemsPrompt: z.boolean().default(true),
 
+    // 玩法指导设置
+    enablePlayGuide: z.boolean().default(false),
+    enabledPlayGuides: z.array(z.string()).default([]),
+    customPlayGuideContents: z.record(z.string(), z.string()).default({}),
+    customPlayGuides: z
+      .array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          description: z.string().default(''),
+          icon: z.string().default('fa-solid fa-scroll'),
+          content: z.string().default(''),
+        })
+      )
+      .default([]),
+
     // 楼层数据显示设置
     enableMessageDisplay: z.boolean().default(false),
   })

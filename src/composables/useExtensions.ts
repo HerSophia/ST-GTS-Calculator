@@ -6,7 +6,7 @@ import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useSettingsStore, DAMAGE_SCENARIOS } from '../settings';
 import { useCharactersStore } from '../characters';
-import { syncExtensionsWithSettings } from '../services/extensions';
+import { syncExtensionsWithSettings, PLAY_GUIDE_DEFINITIONS } from '../services/extensions';
 
 export function useExtensions() {
   const settingsStore = useSettingsStore();
@@ -120,6 +120,63 @@ export function useExtensions() {
     return `${formatNum(min)}-${formatNum(max)}`;
   };
 
+  // ========== 玩法指导 ==========
+
+  /**
+   * 玩法指导是否启用
+   */
+  const isPlayGuideEnabled = computed({
+    get: () => settings.value.enablePlayGuide,
+    set: (value: boolean) => {
+      settings.value.enablePlayGuide = value;
+      onPlayGuideToggle(value);
+    },
+  });
+
+  /**
+   * 已启用的玩法指导 ID 列表
+   */
+  const enabledPlayGuides = computed({
+    get: () => settings.value.enabledPlayGuides,
+    set: (value: string[]) => {
+      settings.value.enabledPlayGuides = value;
+    },
+  });
+
+  /**
+   * 切换指定玩法指导的启用状态
+   */
+  const togglePlayGuide = (guideId: string) => {
+    const current = [...settings.value.enabledPlayGuides];
+    const index = current.indexOf(guideId);
+    if (index >= 0) {
+      current.splice(index, 1);
+    } else {
+      current.push(guideId);
+    }
+    settings.value.enabledPlayGuides = current;
+  };
+
+  /**
+   * 检查指定玩法是否已启用
+   */
+  const isPlayGuideItemEnabled = (guideId: string): boolean => {
+    return settings.value.enabledPlayGuides.includes(guideId);
+  };
+
+  /**
+   * 玩法指导开关变化处理
+   */
+  const onPlayGuideToggle = (enabled: boolean) => {
+    syncExtensionsWithSettings();
+
+    if (enabled) {
+      toastr.success('玩法指导已启用');
+    } else {
+      toastr.info('玩法指导已禁用');
+    }
+  };
+
   return {
     // 状态
     isDamageEnabled,
@@ -130,8 +187,15 @@ export function useExtensions() {
     showSpecialEffects,
     showDamagePerCharacter,
     showDamageSummary,
+    // 玩法指导
+    isPlayGuideEnabled,
+    enabledPlayGuides,
+    playGuideDefinitions: PLAY_GUIDE_DEFINITIONS,
+    togglePlayGuide,
+    isPlayGuideItemEnabled,
     // 方法
     onDamageToggle,
     formatDamageRange,
+    onPlayGuideToggle,
   };
 }

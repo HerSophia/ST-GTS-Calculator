@@ -56,13 +56,13 @@ describe('Store: prompts', () => {
       expect(enabled.find(t => t.id === 'writing-guidelines')).toBeUndefined();
     });
 
-    it('应该按 order 降序排序（order 越大越靠前）', () => {
+    it('应该按 order 升序排序（order 越小越靠前）', () => {
       const store = usePromptsStore();
       const enabled = store.enabledTemplates;
 
-      // 实现使用降序排列：order 越大越靠前
+      // 实现使用升序排列：order 越小越靠前
       for (let i = 1; i < enabled.length; i++) {
-        expect(enabled[i].order).toBeLessThanOrEqual(enabled[i - 1].order);
+        expect(enabled[i].order).toBeGreaterThanOrEqual(enabled[i - 1].order);
       }
     });
   });
@@ -147,10 +147,10 @@ describe('Store: prompts', () => {
       expect(added?.id).toMatch(/^custom-\d+$/);
     });
 
-    it('自定义模板的 order 应该最小（显示在最后）', () => {
+    it('自定义模板的 order 应该最大（显示在最后）', () => {
       const store = usePromptsStore();
-      // 实现中 order 越大越靠前，新模板放在最后（order 最小）
-      const minOrder = Math.min(...store.templates.map(t => t.order));
+      // 实现中 order 越小越靠前，新模板放在最后（order 最大）
+      const maxOrder = Math.max(...store.templates.map(t => t.order));
 
       store.addTemplate({
         name: '自定义模板',
@@ -161,7 +161,7 @@ describe('Store: prompts', () => {
       });
 
       const added = store.templates.find(t => t.name === '自定义模板');
-      expect(added?.order).toBeLessThan(minOrder);
+      expect(added?.order).toBeGreaterThan(maxOrder);
     });
   });
 
@@ -232,8 +232,8 @@ describe('Store: prompts', () => {
   describe('moveTemplate', () => {
     it('应该向上移动模板', () => {
       const store = usePromptsStore();
-      // 实现使用降序排列：order 越大越靠前
-      const sorted = [...store.templates].sort((a, b) => b.order - a.order);
+      // 实现使用升序排列：order 越小越靠前
+      const sorted = [...store.templates].sort((a, b) => a.order - b.order);
       const secondId = sorted[1].id;
       const expectedOrder = sorted[0].order;
 
@@ -245,8 +245,8 @@ describe('Store: prompts', () => {
 
     it('应该向下移动模板', () => {
       const store = usePromptsStore();
-      // 实现使用降序排列：order 越大越靠前
-      const sorted = [...store.templates].sort((a, b) => b.order - a.order);
+      // 实现使用升序排列：order 越小越靠前
+      const sorted = [...store.templates].sort((a, b) => a.order - b.order);
       const firstId = sorted[0].id;
       const expectedOrder = sorted[1].order;
 
@@ -258,8 +258,8 @@ describe('Store: prompts', () => {
 
     it('第一个模板向上移动不应该有效果', () => {
       const store = usePromptsStore();
-      // 实现使用降序排列：order 越大越靠前，所以 sorted[0] 是最大的
-      const sorted = [...store.templates].sort((a, b) => b.order - a.order);
+      // 实现使用升序排列：order 越小越靠前，所以 sorted[0] 是最小的
+      const sorted = [...store.templates].sort((a, b) => a.order - b.order);
       const firstId = sorted[0].id;
       const firstOrder = sorted[0].order;
 
@@ -271,8 +271,8 @@ describe('Store: prompts', () => {
 
     it('最后一个模板向下移动不应该有效果', () => {
       const store = usePromptsStore();
-      // 实现使用降序排列：order 越大越靠前，所以 sorted[last] 是最小的
-      const sorted = [...store.templates].sort((a, b) => b.order - a.order);
+      // 实现使用升序排列：order 越小越靠前，所以 sorted[last] 是最大的
+      const sorted = [...store.templates].sort((a, b) => a.order - b.order);
       const lastId = sorted[sorted.length - 1].id;
       const lastOrder = sorted[sorted.length - 1].order;
 

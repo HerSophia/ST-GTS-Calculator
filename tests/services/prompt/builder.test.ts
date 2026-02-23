@@ -21,7 +21,7 @@ describe('Service: prompt/builder', () => {
   });
 
   // ========== interpolate ==========
-  // 注意：interpolate 使用 \w+ 正则，只匹配英文/数字/下划线，不匹配中文
+  // interpolate 使用 [^}]+ 正则，支持中文/英文/数字/下划线等所有变量名
   describe('interpolate', () => {
     describe('基本变量替换', () => {
       it('应该替换单个英文变量', () => {
@@ -75,15 +75,13 @@ describe('Service: prompt/builder', () => {
         expect(result).toBe('value and {{unknown}}');
       });
 
-      it('中文变量名不会被正则匹配（保留原样）', () => {
-        // 正则 \w+ 不匹配中文，所以中文变量名会保留原样
+      it('中文变量名应该被正确替换', () => {
         const template = '{{角色名}}';
         const context = { 角色名: '络络' } as unknown as Partial<PromptContext>;
         
         const result = interpolate(template, context);
         
-        // 中文变量名不会被替换
-        expect(result).toBe('{{角色名}}');
+        expect(result).toBe('络络');
       });
 
       it('空上下文应该保留所有占位符', () => {

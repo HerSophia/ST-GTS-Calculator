@@ -163,6 +163,7 @@
           @toggle-damage="onDamageToggle"
           @toggle-items="onItemsToggle"
           @toggle-message-display="onMessageDisplayToggle"
+          @toggle-play-guide="onPlayGuideToggle"
           @update:setting="updateSetting"
         />
       </div>
@@ -294,6 +295,19 @@ const onMessageDisplayToggle = (enabled: boolean) => {
     toastr.info('楼层数据显示已禁用');
   }
 };
+
+const onPlayGuideToggle = (enabled: boolean) => {
+  settings.value.enablePlayGuide = enabled;
+  // 同步扩展状态
+  if (enabled) {
+    extensionManager.enable('play-guide');
+    toastr.success('玩法指导已启用');
+  } else {
+    extensionManager.disable('play-guide');
+    toastr.info('玩法指导已禁用');
+  }
+};
+
 
 // ========== 提示词处理 ==========
 const handleSaveTemplate = (template: PromptTemplate) => {
