@@ -6,12 +6,15 @@
         "chrome-devtools-mcp@latest",
         "--autoConnect"
       ]
+<<<<<<< HEAD
     },
     "fetch": {
       "command": "pnpx",
       "args": [
         "@anthropics/mcp-server-fetch@latest"
       ]
+=======
+>>>>>>> f538e79657e2c9a15aa14642adc83ec4c804dd21
     }
   }
 }
