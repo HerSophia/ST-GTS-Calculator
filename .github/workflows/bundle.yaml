@@ -79,7 +79,7 @@ jobs:
           echo "📄 JSON File: ${JSON_FILE}"
 
       - name: Create or Update Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
           name: 巨大娘计算器 v${{ steps.get_version.outputs.version }}
