@@ -9,6 +9,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+<<<<<<< HEAD
 # Auto generated type definitions
 auto-imports.d.ts
 auto-imports.zod.d.ts
@@ -39,3 +40,7 @@ tavern_sync.yaml
 # .kilocode/
 # .roo/
 # .idea/
+=======
+auto-imports.d.ts
+components.d.ts
+>>>>>>> c3c8df31b7e860053e3689eef0f82a0a89f3a481
