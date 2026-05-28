@@ -53,7 +53,11 @@ export default [
     rules: {
       'handle-callback-err': 'off',
       'import-x/no-console': 'off',
+<<<<<<< HEAD
       'import-x/no-cycle': 'warn',
+=======
+      'import-x/no-cycle': 'error',
+>>>>>>> 6dc4e35995d4d180a1cd4ff223ac9d21f083e2f5
       'import-x/no-dynamic-require': 'warn',
       'import-x/no-nodejs-modules': 'warn',
       'import-x/no-unresolved': [2, { ignore: ['^http'] }],
@@ -77,6 +81,7 @@ export default [
     },
   },
   eslintConfigPrettier,
+<<<<<<< HEAD
   globalIgnores([
     'dist/**',
     'node_modules/**',
@@ -93,4 +98,7 @@ export default [
     'components.d.ts',
     'global.d.ts',
   ]),
+=======
+  globalIgnores(['dist/**', 'node_modules/**', 'eslint.config.mjs', 'postcss.config.js', 'webpack.config.ts']),
+>>>>>>> 6dc4e35995d4d180a1cd4ff223ac9d21f083e2f5
 ];
