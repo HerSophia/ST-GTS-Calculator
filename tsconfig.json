@@ -44,7 +44,10 @@
     "示例",
     "src",
     "util",
+<<<<<<< HEAD
     "tests",
+=======
+>>>>>>> 92bc9ed4a5ff1e65a494b9644780983031cdb1df
     "*.d.ts",
   ],
   "exclude": [
