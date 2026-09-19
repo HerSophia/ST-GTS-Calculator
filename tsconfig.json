@@ -11,8 +11,13 @@
     ],
     "target": "ESNext",
     "module": "ESNext",
+<<<<<<< HEAD
     "outDir": "dist",
     "baseUrl": ".",
+=======
+    "rootDir": ".",
+    "outDir": "dist",
+>>>>>>> ef49cc74019348a1696eda4d988d4f4ddc0d1b9b
     "paths": {
       "@util/*": [
         "./util/*"
@@ -44,7 +49,10 @@
     "示例",
     "src",
     "util",
+<<<<<<< HEAD
     "tests",
+=======
+>>>>>>> ef49cc74019348a1696eda4d988d4f4ddc0d1b9b
     "*.d.ts",
   ],
   "exclude": [
