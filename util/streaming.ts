@@ -209,7 +209,13 @@ export function mountStreamingMessages(
       renderOneMessage(message_id);
     }),
   );
+<<<<<<< HEAD
   scopedEventOn(tavern_events.MESSAGE_DELETED, () => setTimeout(errorCatched(renderAllMessage), 1000));
+=======
+  [tavern_events.MORE_MESSAGES_LOADED, tavern_events.MESSAGE_DELETED].forEach(event =>
+    scopedEventOn(event, () => setTimeout(errorCatched(renderAllMessage), 1000)),
+  );
+>>>>>>> 4a9344276d925a83e32726c58b9b05debdf4a8ad
   scopedEventOn(tavern_events.STREAM_TOKEN_RECEIVED, message => {
     renderOneMessage(Number($('#chat').children('.mes.last_mes').attr('mesid')), message);
   });
