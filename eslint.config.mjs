@@ -27,7 +27,11 @@ export default [
       ...eslintPluginBetterTailwindcss.configs['recommended-warn'].rules,
       ...eslintPluginBetterTailwindcss.configs['recommended-error'].rules,
       'better-tailwindcss/enforce-consistent-line-wrapping': ['off', { preferSingleLine: true, printWidth: 120 }],
+<<<<<<< HEAD
       'better-tailwindcss/no-unregistered-classes': ['off', { ignore: ['fa-*'] }],
+=======
+      'better-tailwindcss/no-unknown-classes': ['off', { ignore: ['fa-*'] }],
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
     },
     settings: {
       'better-tailwindcss': {
@@ -53,7 +57,11 @@ export default [
     rules: {
       'handle-callback-err': 'off',
       'import-x/no-console': 'off',
+<<<<<<< HEAD
       'import-x/no-cycle': 'warn',
+=======
+      'import-x/no-cycle': 'error',
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
       'import-x/no-dynamic-require': 'warn',
       'import-x/no-nodejs-modules': 'warn',
       'import-x/no-unresolved': [2, { ignore: ['^http'] }],
@@ -77,6 +85,7 @@ export default [
     },
   },
   eslintConfigPrettier,
+<<<<<<< HEAD
   globalIgnores([
     'dist/**',
     'node_modules/**',
@@ -93,4 +102,7 @@ export default [
     'components.d.ts',
     'global.d.ts',
   ]),
+=======
+  globalIgnores(['dist/**', 'node_modules/**', 'eslint.config.mjs', 'postcss.config.js', 'webpack.config.ts']),
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
 ];
